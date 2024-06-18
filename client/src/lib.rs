@@ -1,17 +1,17 @@
 use std::sync::Arc;
-use egui::{mutex::Mutex, Id, Ui, Vec2, Widget};
+use egui::{mutex::Mutex, Id, Sense, Ui, Vec2, Widget};
 
 #[derive(Clone)]
 pub struct ServerWidget {
     pub addr: String,
-    pub size: Vec2,
+    pub desired_size: Vec2,
 }
 
 impl ServerWidget {
-    pub fn new(addr: String) -> Self {
+    pub fn new(addr: impl Into<String>) -> Self {
         Self {
-            addr,
-            size: Vec2::new(200., 200.),
+            addr: addr.into(),
+            desired_size: Vec2::new(200., 200.),
         }
     }
 }
@@ -65,6 +65,7 @@ struct ClientImpl {
 
 impl ClientImpl {
     fn show(&mut self, ui: &mut Ui) -> egui::Response {
+        let resp = ui.allocate_response(self.view.desired_size, Sense::click_and_drag());
         ui.label("TODO")
     }
 }
