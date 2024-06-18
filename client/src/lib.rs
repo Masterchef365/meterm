@@ -1,14 +1,8 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
+use std::net::ToSocketAddrs;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+use egui::Ui;
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
+fn view_server_ui(ui: &Ui, addr: impl ToSocketAddrs, size: egui::Vec2) {
+    //   I/O   w/ server
+
 }
