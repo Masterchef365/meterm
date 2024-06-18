@@ -14,6 +14,11 @@ impl ServerWidget {
             desired_size: Vec2::new(200., 200.),
         }
     }
+
+    pub fn with_desired_size(mut self, size: Vec2) -> Self {
+        self.desired_size = size;
+        self
+    }
 }
 
 impl Widget for ServerWidget {
@@ -65,6 +70,7 @@ struct ClientImpl {
 
 impl ClientImpl {
     fn show(&mut self, ui: &mut Ui) -> egui::Response {
+
         let resp = ui.allocate_response(self.view.desired_size, Sense::click_and_drag());
         ui.label("TODO")
     }
