@@ -31,15 +31,28 @@ impl Widget for ServerView {
     }
 }
 
-pub struct Client {
-
+pub enum Client {
+    Success(ClientImpl),
+    Failure { addr: String, error: String },
 }
 
 impl Client {
     fn new(addr: String) -> Self {
+        match ewebsock::connect(addr, Default::default()) {
+            Ok((tx, rx)) => Self::Success(ClientImpl { rx, tx }),
+            Err(e) => Self::Failure {
+                addr,
+                error: format!("{#:?}", e),
+            },
+        }
     }
 
     fn show(&mut self, ui: &mut Ui) -> egui::Response {
         todo!()
     }
+}
+
+struct ClientImpl {
+    tx: ewebsock::WsSender,
+    rx: ewebsock::WsReceiver,
 }
