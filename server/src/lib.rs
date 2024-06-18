@@ -1,16 +1,17 @@
-use std::{sync::Arc};
+use std::sync::Arc;
 
 use egui::Ui;
-use tokio::{net::{TcpListener, TcpStream, ToSocketAddrs}, sync::Mutex};
 use futures_util::{stream::StreamExt, TryStreamExt};
+use tokio::{
+    net::{TcpListener, TcpStream, ToSocketAddrs},
+    sync::Mutex,
+};
 
 pub struct ServerImpl {
     clients: Vec<Mutex<Client>>,
 }
 
-struct Client {
-
-}
+struct Client {}
 
 async fn server_loop(addr: impl ToSocketAddrs) {
     let try_socket = TcpListener::bind(&addr).await;
@@ -24,7 +25,9 @@ async fn server_loop(addr: impl ToSocketAddrs) {
 }
 
 async fn accept_connection(stream: TcpStream) {
-    let addr = stream.peer_addr().expect("connected streams should have a peer address");
+    let addr = stream
+        .peer_addr()
+        .expect("connected streams should have a peer address");
     //info!("Peer address: {}", addr);
 
     let ws_stream = tokio_tungstenite::accept_async(stream)
