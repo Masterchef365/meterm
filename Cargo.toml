@@ -2,5 +2,5 @@
 members = [
     "client",
     "server",
-    "common",
+    "common", "examples/basic/server", "examples/basic/basic_server",
 ]
