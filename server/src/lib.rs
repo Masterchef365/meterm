@@ -4,25 +4,19 @@ use egui::Ui;
 use futures_util::{stream::StreamExt, TryStreamExt};
 use tokio::{
     net::{TcpListener, TcpStream, ToSocketAddrs},
-    sync::Mutex,
+    sync::RwLock,
 };
 use log::info;
 
 pub struct ServerImpl {
-    clients: Vec<Mutex<Client>>,
+    clients: Vec<RwLock<Client>>,
 }
 
 struct Client {}
 
-async fn server_loop(addr: impl ToSocketAddrs) {
-    let try_socket = TcpListener::bind(&addr).await;
-
-    let listener = try_socket.expect("Failed to bind");
-    //info!("Listening on: {}", addr.to_socket_addrs(internal));
-
-    while let Ok((stream, _)) = listener.accept().await {
-        tokio::spawn(accept_connection(stream));
-    }
+pub async fn start_server_loop(addr: impl ToSocketAddrs + 'static + Sync + Send) -> Server {
+    //tokio::spawn(server_loop(addr));
+    todo!()
 }
 
 async fn accept_connection(stream: TcpStream) {
@@ -46,16 +40,39 @@ async fn accept_connection(stream: TcpStream) {
         .expect("Failed to forward messages")
 }
 
+async fn server_loop(addr: impl ToSocketAddrs) {
+    let try_socket = TcpListener::bind(&addr).await;
+
+    let listener = try_socket.expect("Failed to bind");
+    //info!("Listening on: {}", addr.to_socket_addrs(internal));
+
+    while let Ok((stream, _)) = listener.accept().await {
+        tokio::spawn(accept_connection(stream));
+    }
+}
+
+/*
 impl ServerImpl {
     pub async fn show_on_clients(&mut self, userfunc: &mut dyn FnMut(&Ui) -> ()) {
         for client in &mut self.clients {
-            client.lock().await.handle_userfunc(userfunc).await;
+            client.write().await.handle_userfunc(userfunc).await;
         }
     }
 }
 
 impl Client {
     async fn handle_userfunc(&mut self, userfunc: &mut dyn FnMut(&Ui) -> ()) {
+        todo!()
+    }
+}
+*/
+
+pub struct Server {
+
+}
+
+impl Server {
+    pub async fn show_on_clients(&mut self, mut f: impl FnMut(&mut Ui)) {
         todo!()
     }
 }
