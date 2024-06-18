@@ -1,14 +1,13 @@
-use std::{net::ToSocketAddrs, sync::Arc};
-
-use egui::{mutex::Mutex, Id, RichText, Ui, Vec2, Widget};
+use std::sync::Arc;
+use egui::{mutex::Mutex, Id, Ui, Vec2, Widget};
 
 #[derive(Clone)]
-pub struct ServerView {
-    addr: String,
-    size: Vec2,
+pub struct ServerWidget {
+    pub addr: String,
+    pub size: Vec2,
 }
 
-impl ServerView {
+impl ServerWidget {
     pub fn new(addr: String) -> Self {
         Self {
             addr,
@@ -17,7 +16,7 @@ impl ServerView {
     }
 }
 
-impl Widget for ServerView {
+impl Widget for ServerWidget {
     fn ui(self, ui: &mut Ui) -> egui::Response {
         let client = ui.ctx().memory_mut(|mem| {
             mem.data
@@ -32,13 +31,13 @@ impl Widget for ServerView {
     }
 }
 
-pub enum Client {
+enum Client {
     Success(ClientImpl),
     Failure { addr: String, error: String },
 }
 
 impl Client {
-    fn new(view: ServerView) -> Self {
+    fn new(view: ServerWidget) -> Self {
         match ewebsock::connect(&view.addr, Default::default()) {
             Ok((tx, rx)) => Self::Success(ClientImpl { rx, tx, view }),
             Err(e) => Self::Failure {
@@ -61,7 +60,7 @@ impl Client {
 struct ClientImpl {
     tx: ewebsock::WsSender,
     rx: ewebsock::WsReceiver,
-    view: ServerView,
+    view: ServerWidget,
 }
 
 impl ClientImpl {
