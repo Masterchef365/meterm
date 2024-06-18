@@ -2,23 +2,28 @@ use std::sync::Arc;
 
 use egui::Ui;
 use futures_util::{stream::StreamExt, TryStreamExt};
+use log::info;
 use tokio::{
     net::{TcpListener, TcpStream, ToSocketAddrs},
     sync::RwLock,
 };
-use log::info;
-
-pub struct ServerImpl {
-    clients: Vec<RwLock<Client>>,
-}
-
-struct Client {}
 
 pub async fn start_server_loop(addr: impl ToSocketAddrs + 'static + Sync + Send) -> Server {
     //tokio::spawn(server_loop(addr));
     todo!()
 }
 
+pub struct Server {
+    client_states: HashMap
+}
+
+impl Server {
+    pub async fn show_on_clients(&mut self, mut f: impl FnMut(&mut Ui)) {
+        todo!()
+    }
+}
+
+/*
 async fn accept_connection(stream: TcpStream) {
     let addr = stream
         .peer_addr()
@@ -51,7 +56,6 @@ async fn server_loop(addr: impl ToSocketAddrs) {
     }
 }
 
-/*
 impl ServerImpl {
     pub async fn show_on_clients(&mut self, userfunc: &mut dyn FnMut(&Ui) -> ()) {
         for client in &mut self.clients {
@@ -66,13 +70,3 @@ impl Client {
     }
 }
 */
-
-pub struct Server {
-
-}
-
-impl Server {
-    pub async fn show_on_clients(&mut self, mut f: impl FnMut(&mut Ui)) {
-        todo!()
-    }
-}

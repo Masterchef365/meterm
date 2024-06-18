@@ -7,10 +7,12 @@ async fn main() {
     let mut counter = 0;
 
     loop {
-        server.show_on_clients(|ui| {
-            if ui.button("Hello world!").clicked() {
-                counter += 1;
-            }
-        }).await;
+        server
+            .show_on_clients(|ui| {
+                if ui.button("Hello world!").clicked() {
+                    counter += 1;
+                }
+            })
+            .await;
     }
 }
