@@ -4,7 +4,7 @@ use egui::{ahash::HashMap, Ui, Context};
 use futures_util::SinkExt;
 use futures_util::{stream::StreamExt, TryStreamExt};
 use handler::ClientGuiHandler;
-use log::info;
+use log::{info, error, warn};
 use metacontrols_common::{ClientToServer, ServerToClient};
 use tokio::net::{TcpListener, TcpStream, ToSocketAddrs};
 use tokio_tungstenite::tungstenite::Message;
@@ -65,8 +65,10 @@ async fn accept_connection(
     loop {
         tokio::select! {
             msg = ws_stream.next() => {
-                if let Some(Ok(Message::Binary(msg))) = msg {
-                    tx.send(bincode::deserialize(&msg).unwrap()).unwrap();
+                match msg {
+                    Some(Ok(Message::Binary(msg))) => tx.send(bincode::deserialize(&msg).unwrap()).unwrap(),
+                    Some(Err(e)) => error!("Receiving from stream; {}", e),
+                    _ => (),
                 }
             },
             val = rx.recv() => {
