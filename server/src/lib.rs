@@ -63,20 +63,25 @@ async fn accept_connection(
     info!("New WebSocket connection");
 
     loop {
-        dbg!("We''re going");
+        dbg!("Selecting");
         tokio::select! {
             msg = ws_stream.next() => {
+                dbg!("Matched stream");
                 match msg {
                     Some(Ok(Message::Binary(msg))) => tx.send(bincode::deserialize(&msg).unwrap()).unwrap(),
-                    Some(Err(e)) => warn!("Receiving from stream; {}", e),
+                    Some(Err(e)) => {
+                        warn!("Receiving from stream; {}", e);
+                        break;
+                    }
                     _ => (),
                 }
             },
             val = rx.recv() => {
-                dbg!("Sending");
+                dbg!("Matched rx");
                 ws_stream.send(Message::Binary(bincode::serialize(&val).unwrap())).await.unwrap();
             },
         }
+        dbg!("Yielding");
         // Always await on at least something
         tokio::task::yield_now().await;
     }
@@ -88,7 +93,6 @@ async fn server_loop(addr: String, new_client_tx: std::sync::mpsc::Sender<Client
     let listener = try_socket.expect("Failed to bind");
 
     while let Ok((stream, _)) = listener.accept().await {
-        info!("new stream begotten h");
         let (client_to_server_tx, client_to_server_rx) = std::sync::mpsc::channel();
         let (server_to_client_tx, server_to_client_rx) = tokio::sync::mpsc::channel(100);
 
@@ -100,24 +104,21 @@ async fn server_loop(addr: String, new_client_tx: std::sync::mpsc::Sender<Client
             })
             .unwrap();
 
-        info!("Spawning");
         tokio::spawn(accept_connection(
             stream,
             client_to_server_tx,
             server_to_client_rx,
         ));
-        info!("Spawnined");
     }
 }
 
 impl Client {
     fn handle_ctx(&mut self, ui_func: &mut dyn FnMut(&Context) -> ()) {
+        dbg!("Handle ctx");
         for packet in self.rx.try_iter() {
-            dbg!("Start handle packet");
             let return_packet = self.gui_handler.handle_packet_in_ui(ui_func, packet);
-            dbg!("Start send");
+            dbg!("Sending");
             self.tx.blocking_send(return_packet).unwrap();
-            dbg!("Done send");
         }
     }
 }
