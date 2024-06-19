@@ -16,7 +16,6 @@ fn main() {
         let tick_start = Instant::now();
 
         server.show_on_clients(|ctx| {
-            dbg!("thing");
             egui::CentralPanel::default().show(ctx, |ui| {
                 if ui.button("Hello world!").clicked() {
                     counter += 1;

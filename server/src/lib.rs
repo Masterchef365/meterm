@@ -63,10 +63,8 @@ async fn accept_connection(
     info!("New WebSocket connection");
 
     loop {
-        dbg!("Selecting");
         tokio::select! {
             msg = ws_stream.next() => {
-                dbg!("Matched stream");
                 match msg {
                     Some(Ok(Message::Binary(msg))) => tx.send(metacontrols_common::deserialize(&msg).unwrap()).unwrap(),
                     Some(Err(e)) => {
@@ -77,11 +75,9 @@ async fn accept_connection(
                 }
             },
             val = rx.recv() => {
-                dbg!("Matched rx");
                 ws_stream.send(Message::Binary(metacontrols_common::serialize(&val).unwrap())).await.unwrap();
             },
         }
-        dbg!("Yielding");
         // Always await on at least something
         tokio::task::yield_now().await;
     }
@@ -114,10 +110,8 @@ async fn server_loop(addr: String, new_client_tx: std::sync::mpsc::Sender<Client
 
 impl Client {
     fn handle_ctx(&mut self, ui_func: &mut dyn FnMut(&Context) -> ()) {
-        dbg!("Handle ctx");
         for packet in self.rx.try_iter() {
             let return_packet = self.gui_handler.handle_packet_in_ui(ui_func, packet);
-            dbg!("Sending");
             self.tx.blocking_send(return_packet).unwrap();
         }
     }

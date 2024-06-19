@@ -47,6 +47,12 @@ enum Client {
     Failure { error: String },
 }
 
+#[cfg(target_arch = "wasm32")]
+unsafe impl Sync for Client {}
+
+#[cfg(target_arch = "wasm32")]
+unsafe impl Send for Client {}
+
 impl Client {
     fn new(view: ServerWidget) -> Self {
         match ewebsock::connect(&view.addr, Default::default()) {
