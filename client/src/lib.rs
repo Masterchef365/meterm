@@ -1,7 +1,7 @@
 use egui::{mutex::Mutex, Id, Sense, Ui, Vec2, Widget};
 use std::sync::Arc;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ServerWidget {
     pub addr: String,
     pub desired_size: Vec2,
@@ -70,6 +70,9 @@ struct ClientImpl {
 
 impl ClientImpl {
     fn show(&mut self, ui: &mut Ui) -> egui::Response {
+        //self.tx.send(ewebsock::WsMessage::Text("Hello".to_string()));
+        dbg!(self.rx.try_recv());
+
         let resp = ui.allocate_response(self.view.desired_size, Sense::click_and_drag());
         ui.label("TODO")
     }

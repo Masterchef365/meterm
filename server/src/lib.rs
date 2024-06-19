@@ -70,6 +70,8 @@ async fn accept_connection(
                 ws_stream.send(Message::Binary(bincode::serialize(&val).unwrap())).await.unwrap();
             },
         }
+        // Always await on at least something
+        tokio::task::yield_now().await;
     }
 }
 
@@ -79,6 +81,7 @@ async fn server_loop(addr: String, new_client_tx: std::sync::mpsc::Sender<Client
     let listener = try_socket.expect("Failed to bind");
 
     while let Ok((stream, _)) = listener.accept().await {
+        info!("new stream begotten h");
         let (client_to_server_tx, client_to_server_rx) = std::sync::mpsc::channel();
         let (server_to_client_tx, server_to_client_rx) = tokio::sync::mpsc::channel(100);
 
@@ -90,11 +93,13 @@ async fn server_loop(addr: String, new_client_tx: std::sync::mpsc::Sender<Client
             })
             .unwrap();
 
+        info!("Spawning");
         tokio::spawn(accept_connection(
             stream,
             client_to_server_tx,
             server_to_client_rx,
         ));
+        info!("Spawnined");
     }
 }
 
