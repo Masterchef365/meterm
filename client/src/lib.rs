@@ -60,7 +60,15 @@ impl Client {
     fn show(&mut self, ui: &mut Ui) -> egui::Response {
         match self {
             Self::Failure { error } => ui.label(format!("Error; {error}")),
-            Self::Success(client) => client.show(ui),
+            Self::Success(client) => match client.show(ui) {
+                Err(error) => {
+                    let mut fail = Self::Failure { error };
+                    let resp = fail.show(ui);
+                    *self = fail;
+                    resp
+                }
+                Ok(resp) => resp,
+            },
         }
     }
 }
@@ -84,13 +92,14 @@ impl ClientImpl {
         }
     }
 
-    fn show(&mut self, ui: &mut Ui) -> egui::Response {
+    fn show(&mut self, ui: &mut Ui) -> Result<egui::Response, String> {
         // Receive messages from server
         match self.rx.try_recv() {
             Some(WsEvent::Opened) => dbg!(self.open = true),
             Some(WsEvent::Message(WsMessage::Binary(msg))) => {
                 self.draw = Some(deserialize(&msg).unwrap())
             }
+            Some(WsEvent::Error(e)) => return Err(format!("{e:#?}")),
             _ => (),
         }
 
@@ -120,7 +129,7 @@ impl ClientImpl {
             ))
         }
 
-        resp
+        Ok(resp)
     }
 }
 
