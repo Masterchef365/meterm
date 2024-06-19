@@ -63,15 +63,17 @@ async fn accept_connection(
     info!("New WebSocket connection");
 
     loop {
+        dbg!("We''re going");
         tokio::select! {
             msg = ws_stream.next() => {
                 match msg {
                     Some(Ok(Message::Binary(msg))) => tx.send(bincode::deserialize(&msg).unwrap()).unwrap(),
-                    Some(Err(e)) => error!("Receiving from stream; {}", e),
+                    Some(Err(e)) => warn!("Receiving from stream; {}", e),
                     _ => (),
                 }
             },
             val = rx.recv() => {
+                dbg!("Sending");
                 ws_stream.send(Message::Binary(bincode::serialize(&val).unwrap())).await.unwrap();
             },
         }
@@ -111,8 +113,11 @@ async fn server_loop(addr: String, new_client_tx: std::sync::mpsc::Sender<Client
 impl Client {
     fn handle_ctx(&mut self, ui_func: &mut dyn FnMut(&Context) -> ()) {
         for packet in self.rx.try_iter() {
+            dbg!("Start handle packet");
             let return_packet = self.gui_handler.handle_packet_in_ui(ui_func, packet);
+            dbg!("Start send");
             self.tx.blocking_send(return_packet).unwrap();
+            dbg!("Done send");
         }
     }
 }

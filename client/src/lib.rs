@@ -38,7 +38,7 @@ impl Widget for ServerWidget {
 
 enum Client {
     Success(ClientImpl),
-    Failure { addr: String, error: String },
+    Failure { error: String },
 }
 
 impl Client {
@@ -46,7 +46,6 @@ impl Client {
         match ewebsock::connect(&view.addr, Default::default()) {
             Ok((tx, rx)) => Self::Success(ClientImpl { rx, tx, view }),
             Err(e) => Self::Failure {
-                addr: view.addr,
                 error: format!("{:?}", e),
             },
         }
@@ -54,8 +53,8 @@ impl Client {
 
     fn show(&mut self, ui: &mut Ui) -> egui::Response {
         match self {
-            Self::Failure { addr, error } => {
-                ui.label(format!("Error connecting to {addr}; {error}"))
+            Self::Failure { error } => {
+                ui.label(format!("Error; {error}"))
             }
             Self::Success(client) => client.show(ui),
         }
