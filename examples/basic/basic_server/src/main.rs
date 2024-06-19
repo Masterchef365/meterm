@@ -10,7 +10,7 @@ fn main() {
     let mut counter = 0;
 
     // We want 20 ticks per second
-    let desired_tickrate = 20.0;
+    let desired_tickrate = 90.0;
 
     loop {
         let tick_start = Instant::now();

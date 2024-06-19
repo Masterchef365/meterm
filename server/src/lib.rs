@@ -78,7 +78,6 @@ async fn accept_connection(
             },
             Some(val) = rx.recv() => {
                 let ser = metacontrols_common::serialize::<ServerToClient>(&val).unwrap();
-                dbg!(ser.len());
                 ws_stream.send(Message::Binary(
                         ser
                 )).await.unwrap();
