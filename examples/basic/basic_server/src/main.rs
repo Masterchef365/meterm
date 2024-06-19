@@ -17,7 +17,7 @@ fn main() {
 
         server.show_on_clients(|ctx| {
             egui::CentralPanel::default().show(ctx, |ui| {
-                if ui.button("Hello world!").clicked() {
+                if ui.button(format!("Hello world! {}", counter)).clicked() {
                     counter += 1;
                 }
             });

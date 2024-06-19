@@ -66,7 +66,7 @@ async fn accept_connection(
         tokio::select! {
             msg = ws_stream.next() => {
                 match msg {
-                    Some(Ok(Message::Binary(msg))) => tx.send(metacontrols_common::deserialize(&msg).unwrap()).unwrap(),
+                    Some(Ok(Message::Binary(msg))) => tx.send(metacontrols_common::deserialize::<ClientToServer>(&msg).unwrap()).unwrap(),
                     Some(Err(e)) => {
                         warn!("Receiving from stream; {}", e);
                         break;
@@ -74,8 +74,8 @@ async fn accept_connection(
                     _ => (),
                 }
             },
-            val = rx.recv() => {
-                ws_stream.send(Message::Binary(metacontrols_common::serialize(&val).unwrap())).await.unwrap();
+            Some(val) = rx.recv() => {
+                ws_stream.send(Message::Binary(metacontrols_common::serialize::<ServerToClient>(&val).unwrap())).await.unwrap();
             },
         }
         // Always await on at least something

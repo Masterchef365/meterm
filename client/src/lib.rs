@@ -3,7 +3,7 @@ use ewebsock::{WsEvent, WsMessage};
 use metacontrols_common::{
     deserialize,
     egui::{self, epaint::ClippedShape, FullOutput},
-    serialize, ClientToServer,
+    serialize, ClientToServer, ServerToClient,
 };
 use std::sync::Arc;
 
@@ -83,7 +83,7 @@ struct ClientImpl {
     tx: ewebsock::WsSender,
     rx: ewebsock::WsReceiver,
     view: ServerWidget,
-    draw: Option<FullOutput>,
+    draw: Option<ServerToClient>,
     open: bool,
 }
 
@@ -103,7 +103,7 @@ impl ClientImpl {
         match self.rx.try_recv() {
             Some(WsEvent::Opened) => dbg!(self.open = true),
             Some(WsEvent::Message(WsMessage::Binary(msg))) => {
-                self.draw = Some(deserialize(&msg).unwrap())
+                self.draw = Some(deserialize::<ServerToClient>(&msg).unwrap())
             }
             Some(WsEvent::Error(e)) => return Err(format!("{e:#?}")),
             _ => (),
@@ -113,8 +113,8 @@ impl ClientImpl {
         let resp = ui.allocate_response(self.view.desired_size, Sense::click_and_drag());
 
         // Draw the server contents
-        if let Some(full_output) = &self.draw {
-            for ClippedShape { clip_rect, shape } in &full_output.shapes {
+        if let Some(packet) = &self.draw {
+            for ClippedShape { clip_rect, shape } in &packet.rendered.shapes {
                 let offset = resp.rect.left_top().to_vec2();
                 let mut shape = shape.clone();
                 shape.translate(offset);
@@ -131,7 +131,7 @@ impl ClientImpl {
         // Send response
         if self.open {
             self.tx.send(WsMessage::Binary(
-                serialize(ClientToServer { raw_input }).unwrap(),
+                serialize(&ClientToServer { raw_input }).unwrap(),
             ))
         }
 
