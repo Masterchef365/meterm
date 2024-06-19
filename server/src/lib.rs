@@ -3,24 +3,13 @@ use std::sync::Arc;
 use egui::{ahash::HashMap, Ui};
 use futures_util::SinkExt;
 use futures_util::{stream::StreamExt, TryStreamExt};
+use handler::ClientGuiHandler;
 use log::info;
 use metacontrols_common::{ClientToServer, ServerToClient};
 use tokio::net::{TcpListener, TcpStream, ToSocketAddrs};
 use tokio_tungstenite::tungstenite::Message;
 
-/*
-enum CompressionLevel {
-    /// See for example 33% of original bandwidth use and like no lag, dude
-    Normal,
-    /// See for example 28% of original bandwidth use and maybe a little lag
-    Maximum,
-}
-
-struct ServerConfig {
-    // Optional compression (can get good rates with
-    compression: Option<CompressionLevel>,
-}
-*/
+mod handler;
 
 pub struct Server {
     new_client_rx: std::sync::mpsc::Receiver<Client>,
@@ -34,9 +23,6 @@ pub struct Client {
     gui_handler: ClientGuiHandler,
     // TODO: task join handle here
 }
-
-#[derive(Default)]
-struct ClientGuiHandler {}
 
 impl Server {
     pub fn new(addr: impl Into<String>) -> Self {
@@ -100,7 +86,7 @@ async fn server_loop(addr: String, new_client_tx: std::sync::mpsc::Sender<Client
             .send(Client {
                 rx: client_to_server_rx,
                 tx: server_to_client_tx,
-                gui_handler: ClientGuiHandler::default(),
+                gui_handler: ClientGuiHandler::new(),
             })
             .unwrap();
 
@@ -121,12 +107,16 @@ impl Client {
     }
 }
 
-impl ClientGuiHandler {
-    fn handle_packet_in_ui(
-        &mut self,
-        ui_func: &mut dyn FnMut(&mut Ui) -> (),
-        packet: ClientToServer,
-    ) -> ServerToClient {
-        todo!()
-    }
+/*
+enum CompressionLevel {
+    /// See for example 33% of original bandwidth use and like no lag, dude
+    Normal,
+    /// See for example 28% of original bandwidth use and maybe a little lag
+    Maximum,
 }
+
+struct ServerConfig {
+    // Optional compression (can get good rates with
+    compression: Option<CompressionLevel>,
+}
+*/
