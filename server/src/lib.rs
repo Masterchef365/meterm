@@ -8,13 +8,27 @@ use tokio::{
     sync::RwLock,
 };
 
+/*
+enum CompressionLevel {
+    /// See for example 33% of original bandwidth use and like no lag, dude
+    Normal,
+    /// See for example 28% of original bandwidth use and maybe a little lag
+    Maximum,
+}
+
+struct ServerConfig {
+    // Optional compression (can get good rates with 
+    compression: Option<CompressionLevel>,
+}
+*/
+
 pub async fn start_server_loop(addr: impl ToSocketAddrs + 'static + Sync + Send) -> Server {
     //tokio::spawn(server_loop(addr));
     todo!()
 }
 
 pub struct Server {
-    client_states: HashMap
+    client_states: HashMap,
 }
 
 impl Server {

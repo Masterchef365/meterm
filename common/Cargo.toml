@@ -4,3 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+serde = { version = "1", features = ["derive"] }
+#egui = "0.27.2"
+egui = { path = "../../egui/crates/egui", features = ["serde"] }
