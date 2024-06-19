@@ -1,21 +1,28 @@
-use metacontrols_common::{ClientToServer, ServerToClient, egui};
-use egui::Ui;
+use metacontrols_common::{egui, ClientToServer, ServerToClient};
+use egui::Context;
 
 #[derive(Default)]
-pub struct ClientGuiHandler {}
+pub struct ClientGuiHandler {
+    ctx: egui::Context,
+}
 
 impl ClientGuiHandler {
     pub fn new() -> Self {
+        let ctx = Context::default();
         Self {
+            ctx,
         }
     }
 
     pub fn handle_packet_in_ui(
         &mut self,
-        ui_func: &mut dyn FnMut(&mut Ui) -> (),
+        ui_func: &mut dyn FnMut(&Context) -> (),
         packet: ClientToServer,
     ) -> ServerToClient {
-        todo!()
+        let ClientToServer { raw_input } = packet;
+        let rendered = self.ctx.run(raw_input, |ctx| ui_func(ctx));
+
+        ServerToClient { rendered }
     }
 }
 

@@ -1,13 +1,15 @@
 use std::sync::Arc;
 
-use egui::{ahash::HashMap, Ui};
+use egui::{ahash::HashMap, Ui, Context};
 use futures_util::SinkExt;
 use futures_util::{stream::StreamExt, TryStreamExt};
 use handler::ClientGuiHandler;
 use log::info;
-use metacontrols_common::{egui, ClientToServer, ServerToClient};
+use metacontrols_common::{ClientToServer, ServerToClient};
 use tokio::net::{TcpListener, TcpStream, ToSocketAddrs};
 use tokio_tungstenite::tungstenite::Message;
+
+pub use metacontrols_common::egui;
 
 mod handler;
 
@@ -38,12 +40,12 @@ impl Server {
         }
     }
 
-    pub fn show_on_clients(&mut self, ui_func: &mut dyn FnMut(&mut Ui)) {
+    pub fn show_on_clients(&mut self, ui_func: &mut dyn FnMut(&Context)) {
         // Register new clients
         self.clients.extend(self.new_client_rx.try_iter());
 
         for client in &mut self.clients {
-            client.handle_ui(ui_func);
+            client.handle_ctx(ui_func);
         }
     }
 }
@@ -104,7 +106,7 @@ async fn server_loop(addr: String, new_client_tx: std::sync::mpsc::Sender<Client
 }
 
 impl Client {
-    fn handle_ui(&mut self, ui_func: &mut dyn FnMut(&mut Ui) -> ()) {
+    fn handle_ctx(&mut self, ui_func: &mut dyn FnMut(&Context) -> ()) {
         for packet in self.rx.try_iter() {
             let return_packet = self.gui_handler.handle_packet_in_ui(ui_func, packet);
             self.tx.blocking_send(return_packet).unwrap();
