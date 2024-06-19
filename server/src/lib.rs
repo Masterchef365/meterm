@@ -28,7 +28,7 @@ pub async fn start_server_loop(addr: impl ToSocketAddrs + 'static + Sync + Send)
 }
 
 pub struct Server {
-    client_states: HashMap,
+    //client_states: HashMap,
 }
 
 impl Server {
