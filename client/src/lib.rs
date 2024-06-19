@@ -103,6 +103,7 @@ impl ClientImpl {
         match self.rx.try_recv() {
             Some(WsEvent::Opened) => dbg!(self.open = true),
             Some(WsEvent::Message(WsMessage::Binary(msg))) => {
+                dbg!(msg.len());
                 self.draw = Some(deserialize::<ServerToClient>(&msg).unwrap())
             }
             Some(WsEvent::Error(e)) => return Err(format!("{e:#?}")),

@@ -1,5 +1,5 @@
-use metacontrols_common::{egui, ClientToServer, ServerToClient};
 use egui::Context;
+use metacontrols_common::{egui, ClientToServer, ServerToClient};
 
 #[derive(Default)]
 pub struct ClientGuiHandler {
@@ -9,9 +9,7 @@ pub struct ClientGuiHandler {
 impl ClientGuiHandler {
     pub fn new() -> Self {
         let ctx = Context::default();
-        Self {
-            ctx,
-        }
+        Self { ctx }
     }
 
     pub fn handle_packet_in_ui(
@@ -25,4 +23,3 @@ impl ClientGuiHandler {
         ServerToClient { rendered }
     }
 }
-

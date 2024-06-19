@@ -1,10 +1,10 @@
 use std::sync::Arc;
 
-use egui::{ahash::HashMap, Ui, Context};
+use egui::{ahash::HashMap, Context, Ui};
 use futures_util::SinkExt;
 use futures_util::{stream::StreamExt, TryStreamExt};
 use handler::ClientGuiHandler;
-use log::{info, error, warn};
+use log::{error, info, warn};
 use metacontrols_common::{ClientToServer, ServerToClient};
 use tokio::net::{TcpListener, TcpStream, ToSocketAddrs};
 use tokio_tungstenite::tungstenite::Message;
@@ -44,7 +44,7 @@ impl Server {
         // Register new clients
         self.clients.extend(self.new_client_rx.try_iter());
 
-        // Handle each client 
+        // Handle each client
         for client in &mut self.clients {
             client.handle_ctx(&mut ui_func);
         }
@@ -66,7 +66,9 @@ async fn accept_connection(
         tokio::select! {
             msg = ws_stream.next() => {
                 match msg {
-                    Some(Ok(Message::Binary(msg))) => tx.send(metacontrols_common::deserialize::<ClientToServer>(&msg).unwrap()).unwrap(),
+                    Some(Ok(Message::Binary(msg))) => tx.send(
+                        metacontrols_common::deserialize::<ClientToServer>(&msg).unwrap()
+                    ).unwrap(),
                     Some(Err(e)) => {
                         warn!("Receiving from stream; {}", e);
                         break;
@@ -75,7 +77,11 @@ async fn accept_connection(
                 }
             },
             Some(val) = rx.recv() => {
-                ws_stream.send(Message::Binary(metacontrols_common::serialize::<ServerToClient>(&val).unwrap())).await.unwrap();
+                let ser = metacontrols_common::serialize::<ServerToClient>(&val).unwrap();
+                dbg!(ser.len());
+                ws_stream.send(Message::Binary(
+                        ser
+                )).await.unwrap();
             },
         }
         // Always await on at least something
