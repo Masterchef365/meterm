@@ -1,6 +1,10 @@
 use egui::{mutex::Mutex, Event, Id, InputState, RawInput, Rect, Sense, Ui, Vec2, Widget};
-use ewebsock::WsMessage;
-use metacontrols_common::{egui, serialize, ClientToServer};
+use ewebsock::{WsEvent, WsMessage};
+use metacontrols_common::{
+    deserialize,
+    egui::{self, epaint::ClippedShape, FullOutput},
+    serialize, ClientToServer,
+};
 use std::sync::Arc;
 
 #[derive(Clone, Debug)]
@@ -65,6 +69,7 @@ struct ClientImpl {
     tx: ewebsock::WsSender,
     rx: ewebsock::WsReceiver,
     view: ServerWidget,
+    draw: Option<FullOutput>,
     open: bool,
 }
 
@@ -74,24 +79,41 @@ impl ClientImpl {
             tx,
             rx,
             view,
+            draw: None,
             open: false,
         }
     }
 
     fn show(&mut self, ui: &mut Ui) -> egui::Response {
-        //self.tx.send(ewebsock::WsMessage::Text("Hello".to_string()));
-
+        // Receive messages from server
         match self.rx.try_recv() {
-            Some(ewebsock::WsEvent::Opened) => dbg!(self.open = true),
+            Some(WsEvent::Opened) => dbg!(self.open = true),
+            Some(WsEvent::Message(WsMessage::Binary(msg))) => {
+                self.draw = Some(deserialize(&msg).unwrap())
+            }
             _ => (),
         }
 
+        // Allocate some space
         let resp = ui.allocate_response(self.view.desired_size, Sense::click_and_drag());
 
+        // Draw the server contents
+        if let Some(full_output) = &self.draw {
+            for ClippedShape { clip_rect, shape } in &full_output.shapes {
+                let offset = resp.rect.left_top().to_vec2();
+                let mut shape = shape.clone();
+                shape.translate(offset);
+                ui.set_clip_rect(clip_rect.translate(offset));
+                ui.painter().add(shape.clone());
+            }
+        }
+
+        // Capture input
         let raw_input = ui
             .ctx()
             .input(|input_state| convert_subwindow_input(input_state, resp.rect));
 
+        // Send response
         if self.open {
             self.tx.send(WsMessage::Binary(
                 serialize(ClientToServer { raw_input }).unwrap(),
