@@ -1,4 +1,6 @@
-use egui::{mutex::Mutex, Id, Sense, Ui, Vec2, Widget};
+use egui::{mutex::Mutex, Event, Id, InputState, RawInput, Rect, Sense, Ui, Vec2, Widget};
+use ewebsock::WsMessage;
+use metacontrols_common::{egui, serialize, ClientToServer};
 use std::sync::Arc;
 
 #[derive(Clone, Debug)]
@@ -44,7 +46,7 @@ enum Client {
 impl Client {
     fn new(view: ServerWidget) -> Self {
         match ewebsock::connect(&view.addr, Default::default()) {
-            Ok((tx, rx)) => Self::Success(ClientImpl { rx, tx, view }),
+            Ok((tx, rx)) => Self::Success(ClientImpl::new(tx, rx, view)),
             Err(e) => Self::Failure {
                 error: format!("{:?}", e),
             },
@@ -53,9 +55,7 @@ impl Client {
 
     fn show(&mut self, ui: &mut Ui) -> egui::Response {
         match self {
-            Self::Failure { error } => {
-                ui.label(format!("Error; {error}"))
-            }
+            Self::Failure { error } => ui.label(format!("Error; {error}")),
             Self::Success(client) => client.show(ui),
         }
     }
@@ -65,14 +65,56 @@ struct ClientImpl {
     tx: ewebsock::WsSender,
     rx: ewebsock::WsReceiver,
     view: ServerWidget,
+    open: bool,
 }
 
 impl ClientImpl {
+    fn new(tx: ewebsock::WsSender, rx: ewebsock::WsReceiver, view: ServerWidget) -> Self {
+        Self {
+            tx,
+            rx,
+            view,
+            open: false,
+        }
+    }
+
     fn show(&mut self, ui: &mut Ui) -> egui::Response {
         //self.tx.send(ewebsock::WsMessage::Text("Hello".to_string()));
-        dbg!(self.rx.try_recv());
+
+        match self.rx.try_recv() {
+            Some(ewebsock::WsEvent::Opened) => dbg!(self.open = true),
+            _ => (),
+        }
 
         let resp = ui.allocate_response(self.view.desired_size, Sense::click_and_drag());
-        ui.label("TODO")
+
+        let raw_input = ui
+            .ctx()
+            .input(|input_state| convert_subwindow_input(input_state, resp.rect));
+
+        if self.open {
+            self.tx.send(WsMessage::Binary(
+                serialize(ClientToServer { raw_input }).unwrap(),
+            ))
+        }
+
+        resp
     }
+}
+
+fn convert_subwindow_input(input_state: &InputState, rect: Rect) -> RawInput {
+    let mut raw = input_state.raw.clone();
+    for ev in &mut raw.events {
+        match ev {
+            Event::PointerMoved(new_pos) => {
+                *new_pos -= rect.left_top().to_vec2();
+            }
+            Event::PointerButton { pos, .. } => {
+                *pos -= rect.left_top().to_vec2();
+            }
+            _ => (),
+        }
+    }
+
+    raw
 }

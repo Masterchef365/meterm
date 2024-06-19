@@ -68,7 +68,7 @@ async fn accept_connection(
             msg = ws_stream.next() => {
                 dbg!("Matched stream");
                 match msg {
-                    Some(Ok(Message::Binary(msg))) => tx.send(bincode::deserialize(&msg).unwrap()).unwrap(),
+                    Some(Ok(Message::Binary(msg))) => tx.send(metacontrols_common::deserialize(&msg).unwrap()).unwrap(),
                     Some(Err(e)) => {
                         warn!("Receiving from stream; {}", e);
                         break;
@@ -78,7 +78,7 @@ async fn accept_connection(
             },
             val = rx.recv() => {
                 dbg!("Matched rx");
-                ws_stream.send(Message::Binary(bincode::serialize(&val).unwrap())).await.unwrap();
+                ws_stream.send(Message::Binary(metacontrols_common::serialize(&val).unwrap())).await.unwrap();
             },
         }
         dbg!("Yielding");

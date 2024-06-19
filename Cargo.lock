@@ -267,31 +267,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "ecolor"
-version = "0.27.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "20930a432bbd57a6d55e07976089708d4893f3d556cf42a0d79e9e321fa73b10"
-
-[[package]]
 name = "egui"
 version = "0.27.2"
 dependencies = [
  "accesskit",
  "ahash",
- "epaint 0.27.2",
+ "epaint",
  "nohash-hasher",
  "serde",
-]
-
-[[package]]
-name = "egui"
-version = "0.27.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "584c5d1bf9a67b25778a3323af222dbe1a1feb532190e103901187f92c7fe29a"
-dependencies = [
- "ahash",
- "epaint 0.27.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "nohash-hasher",
 ]
 
 [[package]]
@@ -300,12 +283,6 @@ version = "0.27.2"
 dependencies = [
  "serde",
 ]
-
-[[package]]
-name = "emath"
-version = "0.27.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e4c3a552cfca14630702449d35f41c84a0d15963273771c6059175a803620f3f"
 
 [[package]]
 name = "enumn"
@@ -347,25 +324,11 @@ version = "0.27.2"
 dependencies = [
  "ab_glyph",
  "ahash",
- "ecolor 0.27.2",
- "emath 0.27.2",
+ "ecolor",
+ "emath",
  "nohash-hasher",
  "parking_lot",
  "serde",
-]
-
-[[package]]
-name = "epaint"
-version = "0.27.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b381f8b149657a4acf837095351839f32cd5c4aec1817fc4df84e18d76334176"
-dependencies = [
- "ab_glyph",
- "ahash",
- "ecolor 0.27.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "emath 0.27.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "nohash-hasher",
- "parking_lot",
 ]
 
 [[package]]
@@ -693,15 +656,16 @@ checksum = "78ca9ab1a0babb1e7d5695e3530886289c18cf2f87ec19a575a0abdce112e3a3"
 name = "metacontrols-client"
 version = "0.1.0"
 dependencies = [
- "egui 0.27.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "ewebsock",
+ "metacontrols-common",
 ]
 
 [[package]]
 name = "metacontrols-common"
 version = "0.1.0"
 dependencies = [
- "egui 0.27.2",
+ "bincode",
+ "egui",
  "serde",
 ]
 
@@ -709,7 +673,6 @@ dependencies = [
 name = "metacontrols-server"
 version = "0.1.0"
 dependencies = [
- "bincode",
  "futures-util",
  "log",
  "metacontrols-common",
