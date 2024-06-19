@@ -25,6 +25,7 @@ struct ServerConfig {
 pub struct Server {
     new_client_rx: std::sync::mpsc::Receiver<Client>,
     clients: Vec<Client>,
+    runtime: tokio::runtime::Runtime,
 }
 
 pub struct Client {
@@ -38,11 +39,14 @@ pub struct Client {
 struct ClientGuiHandler {}
 
 impl Server {
-    pub fn new(addr: impl ToSocketAddrs + 'static + Sync + Send) -> Self {
+    pub fn new(addr: impl Into<String>) -> Self {
         let (new_client_tx, new_client_rx) = std::sync::mpsc::channel();
-        tokio::spawn(server_loop(addr, new_client_tx));
+
+        let runtime = tokio::runtime::Runtime::new().unwrap();
+        runtime.spawn(server_loop(addr.into(), new_client_tx));
 
         Self {
+            runtime,
             new_client_rx,
             clients: vec![],
         }
@@ -60,7 +64,7 @@ impl Server {
 
 async fn accept_connection(
     stream: TcpStream,
-    mut tx: std::sync::mpsc::Sender<ClientToServer>,
+    tx: std::sync::mpsc::Sender<ClientToServer>,
     mut rx: tokio::sync::mpsc::Receiver<ServerToClient>,
 ) {
     let mut ws_stream = tokio_tungstenite::accept_async(stream)
@@ -83,7 +87,7 @@ async fn accept_connection(
     }
 }
 
-async fn server_loop(addr: impl ToSocketAddrs, new_client_tx: std::sync::mpsc::Sender<Client>) {
+async fn server_loop(addr: String, new_client_tx: std::sync::mpsc::Sender<Client>) {
     let try_socket = TcpListener::bind(&addr).await;
 
     let listener = try_socket.expect("Failed to bind");
