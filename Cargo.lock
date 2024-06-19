@@ -710,7 +710,6 @@ name = "metacontrols-server"
 version = "0.1.0"
 dependencies = [
  "bincode",
- "egui 0.27.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures-util",
  "log",
  "metacontrols-common",

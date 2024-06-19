@@ -1,5 +1,5 @@
+use metacontrols_common::{ClientToServer, ServerToClient, egui};
 use egui::Ui;
-use metacontrols_common::{ClientToServer, ServerToClient};
 
 #[derive(Default)]
 pub struct ClientGuiHandler {}

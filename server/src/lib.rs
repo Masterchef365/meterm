@@ -5,7 +5,7 @@ use futures_util::SinkExt;
 use futures_util::{stream::StreamExt, TryStreamExt};
 use handler::ClientGuiHandler;
 use log::info;
-use metacontrols_common::{ClientToServer, ServerToClient};
+use metacontrols_common::{egui, ClientToServer, ServerToClient};
 use tokio::net::{TcpListener, TcpStream, ToSocketAddrs};
 use tokio_tungstenite::tungstenite::Message;
 
