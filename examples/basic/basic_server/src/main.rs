@@ -8,12 +8,15 @@ fn main() {
     let mut counter = 0;
 
     loop {
-        server.show_on_clients(&mut |ctx| {
+        server.show_on_clients(|ctx| {
+            dbg!("thing");
             egui::CentralPanel::default().show(ctx, |ui| {
                 if ui.button("Hello world!").clicked() {
                     counter += 1;
                 }
             });
         });
+
+        std::thread::sleep(std::time::Duration::from_micros(100));
     }
 }

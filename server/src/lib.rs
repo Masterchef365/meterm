@@ -40,12 +40,13 @@ impl Server {
         }
     }
 
-    pub fn show_on_clients(&mut self, ui_func: &mut dyn FnMut(&Context)) {
+    pub fn show_on_clients(&mut self, mut ui_func: impl FnMut(&Context)) {
         // Register new clients
         self.clients.extend(self.new_client_rx.try_iter());
 
+        // Handle each client 
         for client in &mut self.clients {
-            client.handle_ctx(ui_func);
+            client.handle_ctx(&mut ui_func);
         }
     }
 }
