@@ -38,13 +38,13 @@ impl Widget for ServerWidget {
         let client = ui.ctx().memory_mut(|mem| {
             mem.data
                 .get_temp_mut_or_insert_with(Id::new(&self.addr), || {
-                    Arc::new(Mutex::new(Client::new(self.clone(), ui.ctx())))
+                    Arc::new(Mutex::new(Client::connect(self.clone(), ui.ctx())))
                 })
                 .clone()
         });
 
         let mut lck = client.lock();
-        lck.show(ui)
+        lck.show(ui, &self)
     }
 }
 
@@ -60,7 +60,7 @@ unsafe impl Sync for Client {}
 unsafe impl Send for Client {}
 
 impl Client {
-    fn new(view: ServerWidget, ctx: &Context) -> Self {
+    fn connect(view: ServerWidget, ctx: &Context) -> Self {
         let ctx = ctx.clone();
         match ewebsock::connect_with_wakeup(&view.addr, Default::default(), move || {
             ctx.request_repaint()
@@ -72,13 +72,20 @@ impl Client {
         }
     }
 
-    fn show(&mut self, ui: &mut Ui) -> egui::Response {
+    fn show(&mut self, ui: &mut Ui, view: &ServerWidget) -> egui::Response {
         match self {
-            Self::Failure { error } => ui.label(format!("Error; {error}")),
+            Self::Failure { error } => {
+                ui.label(format!("Error; {error}"));
+                let resp = ui.button("Try again");
+                if resp.clicked() {
+                    *self = Self::connect(view.clone(), ui.ctx());
+                }
+                resp
+            },
             Self::Success(client) => match client.show(ui) {
                 Err(error) => {
                     let mut fail = Self::Failure { error };
-                    let resp = fail.show(ui);
+                    let resp = fail.show(ui, view);
                     *self = fail;
                     resp
                 }
