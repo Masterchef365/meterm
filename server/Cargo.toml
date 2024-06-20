@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 tokio-tungstenite = "*"
-tokio = { version = "1", features = ["rt", "net", "sync"] }
+tokio = { version = "1", features = ["full"] }
 log = "0.4.21"
 futures-util = "0.3.30"
 metacontrols-common = { path = "../common" }

@@ -3,5 +3,6 @@ members = [
     "client",
     "server",
     "common",
-    "examples/basic/basic_server",
+    "examples/basic/basic_server", 
+    "examples/basic/using_demo_lib",
 ]
