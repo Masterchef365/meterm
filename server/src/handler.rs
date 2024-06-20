@@ -1,13 +1,14 @@
 use std::any::Any;
 
 use egui::Context;
-use metacontrols_common::{egui::{self, ahash::HashMap, RawInput}, ClientToServer, ServerToClient};
+use metacontrols_common::{delta_encoding, egui::{self, ahash::HashMap, RawInput}, ClientToServer, ServerToClient};
 
 pub type UserStore = HashMap<&'static str, Box<dyn Any + Send + Sync + 'static>>;
 
 #[derive(Default)]
 pub struct ClientGuiHandler {
     ctx: egui::Context,
+    encoder: delta_encoding::Encoder,
     latest_blank_input: Option<RawInput>,
     user_storage: UserStore,
 }
@@ -15,7 +16,12 @@ pub struct ClientGuiHandler {
 impl ClientGuiHandler {
     pub fn new() -> Self {
         let ctx = Context::default();
-        Self { ctx, latest_blank_input: None, user_storage: Default::default() }
+        Self { 
+            ctx, 
+            latest_blank_input: None, 
+            user_storage: Default::default(),
+            encoder: Default::default(),
+        }
     }
 
     pub fn handle_packet_in_ui(
@@ -51,9 +57,11 @@ impl ClientGuiHandler {
         raw_input: RawInput,
     ) -> ServerToClient {
 
-        let rendered = self.ctx.run(raw_input, |ctx| ui_func(ctx, &mut self.user_storage));
+        let full_output = self.ctx.run(raw_input, |ctx| ui_func(ctx, &mut self.user_storage));
 
-        ServerToClient { rendered }
+        let update = self.encoder.encode(&full_output);
+
+        ServerToClient { update }
     }
 
 }

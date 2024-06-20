@@ -1,9 +1,7 @@
 use egui::{mutex::Mutex, Event, Id, InputState, RawInput, Rect, Sense, Ui, Vec2, Widget};
 use ewebsock::{WsEvent, WsMessage};
 use metacontrols_common::{
-    deserialize,
-    egui::{self, epaint::ClippedShape, Context, FullOutput},
-    serialize, ClientToServer, ServerToClient,
+    delta_encoding::{self, Decoder}, deserialize, egui::{self, epaint::ClippedShape, Context, FullOutput}, serialize, ClientToServer, ServerToClient
 };
 use std::sync::Arc;
 use log::{info, trace};
@@ -87,6 +85,7 @@ struct ClientImpl {
     view: ServerWidget,
     latest_msg: Option<ServerToClient>,
     open: bool,
+    decoder: delta_encoding::Decoder,
 }
 
 impl ClientImpl {
@@ -97,6 +96,7 @@ impl ClientImpl {
             view,
             latest_msg: None,
             open: false,
+            decoder: Decoder::new(),
         }
     }
 
@@ -119,12 +119,14 @@ impl ClientImpl {
 
         // Draw the server contents
         if let Some(packet) = &self.latest_msg {
-            for ClippedShape { clip_rect, shape } in &packet.rendered.shapes {
-                let offset = resp.rect.left_top().to_vec2();
-                let mut shape = shape.clone();
-                shape.translate(offset);
-                ui.set_clip_rect(clip_rect.translate(offset));
-                ui.painter().add(shape.clone());
+            if let Some(full_output) = self.decoder.decode(packet.update.clone()) {
+                for ClippedShape { clip_rect, shape } in &full_output.shapes {
+                    let offset = resp.rect.left_top().to_vec2();
+                    let mut shape = shape.clone();
+                    shape.translate(offset);
+                    ui.set_clip_rect(clip_rect.translate(offset));
+                    ui.painter().add(shape.clone());
+                }
             }
         }
 

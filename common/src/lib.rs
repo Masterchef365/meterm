@@ -1,10 +1,12 @@
 pub use egui;
+pub mod delta_encoding;
+mod hash_abuse;
 
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ServerToClient {
-    pub rendered: egui::FullOutput,
+    pub update: delta_encoding::UpdateData,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
