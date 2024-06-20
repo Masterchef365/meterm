@@ -186,19 +186,5 @@ fn doctor_frame(mut full: FullOutput, ctx: &Context) -> FullOutput {
 }
 
 fn doctor_text(text: &mut TextShape, ctx: &Context) {
-    let mut galley = Arc::unwrap_or_clone(text.galley.clone());
-
-    let Some(section) = text.galley.job.sections.get(0) else {return};
-    let font_id = &section.format.font_id;
-
-    for row in &mut galley.rows {
-        for glyph in &mut row.glyphs {
-            let uv = ctx.fonts(|r| r.glyph_uv(font_id, glyph.chr));
-            assert_eq!(uv, glyph.uv_rect);
-            dbg!((glyph.uv_rect, uv));
-            glyph.uv_rect = uv;
-        }
-    }
-
-    text.galley = Arc::new(galley);
+    text.galley = ctx.fonts(|r| r.layout_job(Arc::unwrap_or_clone(text.galley.job.clone())));
 }
