@@ -5,7 +5,8 @@ use futures_util::SinkExt;
 use futures_util::{stream::StreamExt, TryStreamExt};
 use handler::ClientGuiHandler;
 use log::{error, info, warn};
-use metacontrols_common::{ClientToServer, ServerToClient};
+use metacontrols_common::delta_encoding::Encoder;
+use metacontrols_common::{delta_encoding, ClientToServer, ServerToClient};
 use tokio::net::{TcpListener, TcpStream, ToSocketAddrs};
 use tokio_tungstenite::tungstenite::Message;
 
@@ -26,6 +27,7 @@ pub struct Client {
     rx: std::sync::mpsc::Receiver<ClientToServer>,
     tx: tokio::sync::mpsc::Sender<ServerToClient>,
     gui_handler: ClientGuiHandler,
+    encoder: delta_encoding::Encoder,
     // TODO: task join handle here
 }
 
@@ -114,6 +116,7 @@ async fn server_loop(addr: String, new_client_tx: std::sync::mpsc::Sender<Client
                 rx: client_to_server_rx,
                 tx: server_to_client_tx,
                 gui_handler: ClientGuiHandler::new(),
+                encoder: Encoder::new(),
             })
             .unwrap();
 
@@ -126,7 +129,11 @@ async fn server_loop(addr: String, new_client_tx: std::sync::mpsc::Sender<Client
 }
 
 impl Client {
-    fn handle_ctx(&mut self, ui_func: &mut dyn FnMut(&Context, &mut UserStore), force_update: bool) -> bool {
+    fn handle_ctx(
+        &mut self,
+        ui_func: &mut dyn FnMut(&Context, &mut UserStore),
+        force_update: bool,
+    ) -> bool {
         let mut any_requested_repaint = false;
 
         // Update clients which updated
@@ -135,14 +142,18 @@ impl Client {
             needs_blank_update = false;
             if let Some(return_packet) = self.gui_handler.handle_packet_in_ui(ui_func, packet) {
                 any_requested_repaint = true;
-                let _ = self.tx.blocking_send(return_packet);
+                let _ = self.tx.blocking_send(ServerToClient {
+                    update: self.encoder.encode(&return_packet),
+                });
             }
         }
 
         // Use an eventless version of the last raw input to generate an update
         if needs_blank_update {
             if let Some(return_packet) = self.gui_handler.handle_blank_packet_in_ui(ui_func) {
-                let _ = self.tx.blocking_send(return_packet);
+                let _ = self.tx.blocking_send(ServerToClient {
+                    update: self.encoder.encode(&return_packet),
+                });
             }
         }
 
