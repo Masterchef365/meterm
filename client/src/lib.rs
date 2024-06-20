@@ -1,10 +1,13 @@
 use egui::{mutex::Mutex, Event, Id, InputState, RawInput, Rect, Sense, Ui, Vec2, Widget};
 use ewebsock::{WsEvent, WsMessage};
+use log::{info, trace};
 use metacontrols_common::{
-    delta_encoding::{self, Decoder}, deserialize, egui::{self, epaint::ClippedShape, Context, FullOutput}, serialize, ClientToServer, ServerToClient
+    delta_encoding::{self, Decoder},
+    deserialize,
+    egui::{self, epaint::ClippedShape, Context, FullOutput},
+    serialize, ClientToServer, ServerToClient,
 };
 use std::sync::Arc;
-use log::{info, trace};
 
 #[derive(Clone, Debug)]
 pub struct ServerWidget {
@@ -55,7 +58,9 @@ unsafe impl Send for Client {}
 impl Client {
     fn new(view: ServerWidget, ctx: &Context) -> Self {
         let ctx = ctx.clone();
-        match ewebsock::connect_with_wakeup(&view.addr, Default::default(), move || ctx.request_repaint()) {
+        match ewebsock::connect_with_wakeup(&view.addr, Default::default(), move || {
+            ctx.request_repaint()
+        }) {
             Ok((tx, rx)) => Self::Success(ClientImpl::new(tx, rx, view)),
             Err(e) => Self::Failure {
                 error: format!("{:?}", e),
@@ -83,7 +88,7 @@ struct ClientImpl {
     tx: ewebsock::WsSender,
     rx: ewebsock::WsReceiver,
     view: ServerWidget,
-    latest_msg: Option<ServerToClient>,
+    latest_frame: Option<FullOutput>,
     open: bool,
     decoder: delta_encoding::Decoder,
 }
@@ -94,7 +99,7 @@ impl ClientImpl {
             tx,
             rx,
             view,
-            latest_msg: None,
+            latest_frame: None,
             open: false,
             decoder: Decoder::new(),
         }
@@ -107,7 +112,10 @@ impl ClientImpl {
                 Some(WsEvent::Opened) => dbg!(self.open = true),
                 Some(WsEvent::Message(WsMessage::Binary(msg))) => {
                     info!("Length {}", msg.len());
-                    self.latest_msg = Some(deserialize::<ServerToClient>(&msg).unwrap())
+                    let packet: ServerToClient = deserialize(&msg).unwrap();
+                    if let Some(full_output) = self.decoder.decode(packet.update.clone()) {
+                        self.latest_frame = Some(full_output);
+                    }
                 }
                 Some(WsEvent::Error(e)) => return Err(format!("{e:#?}")),
                 _ => break,
@@ -118,15 +126,13 @@ impl ClientImpl {
         let resp = ui.allocate_response(self.view.desired_size, Sense::click_and_drag());
 
         // Draw the server contents
-        if let Some(packet) = &self.latest_msg {
-            if let Some(full_output) = self.decoder.decode(packet.update.clone()) {
-                for ClippedShape { clip_rect, shape } in &full_output.shapes {
-                    let offset = resp.rect.left_top().to_vec2();
-                    let mut shape = shape.clone();
-                    shape.translate(offset);
-                    ui.set_clip_rect(clip_rect.translate(offset));
-                    ui.painter().add(shape.clone());
-                }
+        if let Some(full_output) = &self.latest_frame {
+            for ClippedShape { clip_rect, shape } in &full_output.shapes {
+                let offset = resp.rect.left_top().to_vec2();
+                let mut shape = shape.clone();
+                shape.translate(offset);
+                ui.set_clip_rect(clip_rect.translate(offset));
+                ui.painter().add(shape.clone());
             }
         }
 
