@@ -3,6 +3,13 @@ use std::time::Instant;
 use egui_demo_lib::DemoWindows;
 use metacontrols_server::{egui, Server};
 
+#[derive(Default)]
+struct SafeDemo(DemoWindows);
+
+// I'm sure this is fine. :)
+unsafe impl Send for SafeDemo {}
+unsafe impl Sync for SafeDemo {}
+
 fn main() {
     env_logger::try_init().unwrap();
 
@@ -16,10 +23,13 @@ fn main() {
     loop {
         let tick_start = Instant::now();
 
-        let mut demo = DemoWindows::default();
+        server.show_on_clients(|ctx, user| {
+            let demo = user.entry("Demo")
+                .or_insert_with(|| Box::new(SafeDemo(DemoWindows::default())))
+                .downcast_mut::<SafeDemo>()
+                .unwrap();
 
-        server.show_on_clients(|ctx, _| {
-            demo.ui(ctx);
+            demo.0.ui(ctx);
         });
 
         let tick_time = tick_start.elapsed();
