@@ -11,5 +11,6 @@ futures-util = "0.3.30"
 metacontrols-common = { path = "../common" }
 
 [dev-dependencies]
-egui_demo_lib = { path = "../../egui/crates/egui_demo_lib" }
+#egui_demo_lib = { path = "../../egui/crates/egui_demo_lib" }
+egui_demo_lib  = { git = "https://github.com/Masterchef365/egui.git", branch = "no-usize-in-interface" }
 env_logger = "0.11.3"
