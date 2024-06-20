@@ -667,6 +667,7 @@ name = "metacontrols-client"
 version = "0.1.0"
 dependencies = [
  "ewebsock",
+ "log",
  "metacontrols-common",
 ]
 

@@ -6,6 +6,7 @@ use metacontrols_common::{
     serialize, ClientToServer, ServerToClient,
 };
 use std::sync::Arc;
+use log::{info, trace};
 
 #[derive(Clone, Debug)]
 pub struct ServerWidget {
@@ -103,7 +104,8 @@ impl ClientImpl {
         match self.rx.try_recv() {
             Some(WsEvent::Opened) => dbg!(self.open = true),
             Some(WsEvent::Message(WsMessage::Binary(msg))) => {
-                dbg!(msg.len());
+                info!("Length {}", msg.len());
+                info!("Content {}", String::from_utf8(msg.clone()).unwrap());
                 self.draw = Some(deserialize::<ServerToClient>(&msg).unwrap())
             }
             Some(WsEvent::Error(e)) => return Err(format!("{e:#?}")),

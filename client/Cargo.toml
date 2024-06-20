@@ -6,3 +6,4 @@ edition = "2021"
 [dependencies]
 ewebsock = "0.6.0"
 metacontrols-common = { path = "../common" }
+log = "0.4.21"
