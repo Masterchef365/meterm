@@ -16,10 +16,10 @@ impl ClientGuiHandler {
         &mut self,
         ui_func: &mut dyn FnMut(&Context) -> (),
         packet: ClientToServer,
-    ) -> ServerToClient {
+    ) -> Option<ServerToClient> {
         let ClientToServer { raw_input } = packet;
         let rendered = self.ctx.run(raw_input, |ctx| ui_func(ctx));
 
-        ServerToClient { rendered }
+        self.ctx.has_requested_repaint().then(|| ServerToClient { rendered })
     }
 }

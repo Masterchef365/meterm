@@ -116,8 +116,9 @@ async fn server_loop(addr: String, new_client_tx: std::sync::mpsc::Sender<Client
 impl Client {
     fn handle_ctx(&mut self, ui_func: &mut dyn FnMut(&Context) -> ()) {
         for packet in self.rx.try_iter() {
-            let return_packet = self.gui_handler.handle_packet_in_ui(ui_func, packet);
-            let _ = self.tx.blocking_send(return_packet);
+            if let Some(return_packet) = self.gui_handler.handle_packet_in_ui(ui_func, packet) {
+                let _ = self.tx.blocking_send(return_packet);
+            }
         }
     }
 }

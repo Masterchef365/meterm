@@ -85,7 +85,7 @@ struct ClientImpl {
     tx: ewebsock::WsSender,
     rx: ewebsock::WsReceiver,
     view: ServerWidget,
-    draw: Option<ServerToClient>,
+    latest_msg: Option<ServerToClient>,
     open: bool,
 }
 
@@ -95,28 +95,30 @@ impl ClientImpl {
             tx,
             rx,
             view,
-            draw: None,
+            latest_msg: None,
             open: false,
         }
     }
 
     fn show(&mut self, ui: &mut Ui) -> Result<egui::Response, String> {
         // Receive messages from server
-        match self.rx.try_recv() {
-            Some(WsEvent::Opened) => dbg!(self.open = true),
-            Some(WsEvent::Message(WsMessage::Binary(msg))) => {
-                info!("Length {}", msg.len());
-                self.draw = Some(deserialize::<ServerToClient>(&msg).unwrap())
+        loop {
+            match self.rx.try_recv() {
+                Some(WsEvent::Opened) => dbg!(self.open = true),
+                Some(WsEvent::Message(WsMessage::Binary(msg))) => {
+                    info!("Length {}", msg.len());
+                    self.latest_msg = Some(deserialize::<ServerToClient>(&msg).unwrap())
+                }
+                Some(WsEvent::Error(e)) => return Err(format!("{e:#?}")),
+                _ => break,
             }
-            Some(WsEvent::Error(e)) => return Err(format!("{e:#?}")),
-            _ => (),
         }
 
         // Allocate some space
         let resp = ui.allocate_response(self.view.desired_size, Sense::click_and_drag());
 
         // Draw the server contents
-        if let Some(packet) = &self.draw {
+        if let Some(packet) = &self.latest_msg {
             for ClippedShape { clip_rect, shape } in &packet.rendered.shapes {
                 let offset = resp.rect.left_top().to_vec2();
                 let mut shape = shape.clone();
