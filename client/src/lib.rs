@@ -4,7 +4,11 @@ use log::{info, trace};
 use metacontrols_common::{
     delta_encoding::{self, Decoder},
     deserialize,
-    egui::{self, epaint::ClippedShape, Context, FullOutput},
+    egui::{
+        self,
+        epaint::{ClippedShape, TextShape},
+        Context, FullOutput, Shape,
+    },
     serialize, ClientToServer, ServerToClient,
 };
 use std::sync::Arc;
@@ -114,6 +118,7 @@ impl ClientImpl {
                     info!("Length {}", msg.len());
                     let packet: ServerToClient = deserialize(&msg).unwrap();
                     if let Some(full_output) = self.decoder.decode(packet.update.clone()) {
+                        let full_output = doctor_frame(full_output, ui.ctx());
                         self.latest_frame = Some(full_output);
                     }
                 }
@@ -167,4 +172,33 @@ fn convert_subwindow_input(input_state: &InputState, rect: Rect) -> RawInput {
     }
 
     raw
+}
+
+fn doctor_frame(mut full: FullOutput, ctx: &Context) -> FullOutput {
+    for shape in &mut full.shapes {
+        match &mut shape.shape {
+            Shape::Text(text) => doctor_text(text, ctx),
+            _ => (),
+        }
+    }
+
+    full
+}
+
+fn doctor_text(text: &mut TextShape, ctx: &Context) {
+    let mut galley = Arc::unwrap_or_clone(text.galley.clone());
+
+    let Some(section) = text.galley.job.sections.get(0) else {return};
+    let font_id = &section.format.font_id;
+
+    for row in &mut galley.rows {
+        for glyph in &mut row.glyphs {
+            let uv = ctx.fonts(|r| r.glyph_uv(font_id, glyph.chr));
+            assert_eq!(uv, glyph.uv_rect);
+            dbg!((glyph.uv_rect, uv));
+            glyph.uv_rect = uv;
+        }
+    }
+
+    text.galley = Arc::new(galley);
 }
