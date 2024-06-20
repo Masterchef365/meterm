@@ -32,7 +32,7 @@ impl Default for Encoder {
     fn default() -> Self {
         Self {
             memory: Default::default(),
-            interval: 0,
+            interval: 90,
             counter: 0,
         }
     }
