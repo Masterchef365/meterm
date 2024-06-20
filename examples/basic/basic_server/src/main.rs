@@ -1,6 +1,6 @@
 use std::time::Instant;
 
-use metacontrols_server::{egui, Server};
+use metacontrols_server::{egui::{self, DragValue, Slider}, Server};
 
 fn main() {
     env_logger::try_init().unwrap();
@@ -8,6 +8,7 @@ fn main() {
     let mut server = Server::new("0.0.0.0:5000");
 
     let mut counter = 0;
+    let mut drag = 0.0;
 
     let mut user_counter: usize = 0;
 
@@ -32,6 +33,9 @@ fn main() {
                 if ui.button(format!("Hello world! {}", counter)).clicked() {
                     counter += 1;
                 }
+
+                ui.add(DragValue::new(&mut drag));
+                ui.add(Slider::new(&mut drag, 0.0..=1000.0));
             });
         });
 
