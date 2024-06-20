@@ -117,7 +117,7 @@ impl Client {
     fn handle_ctx(&mut self, ui_func: &mut dyn FnMut(&Context) -> ()) {
         for packet in self.rx.try_iter() {
             let return_packet = self.gui_handler.handle_packet_in_ui(ui_func, packet);
-            self.tx.blocking_send(return_packet).unwrap();
+            let _ = self.tx.blocking_send(return_packet);
         }
     }
 }
