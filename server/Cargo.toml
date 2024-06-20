@@ -9,3 +9,7 @@ tokio = { version = "1", features = ["full"] }
 log = "0.4.21"
 futures-util = "0.3.30"
 metacontrols-common = { path = "../common" }
+
+[dev-dependencies]
+egui_demo_lib = { path = "../../egui/crates/egui_demo_lib" }
+env_logger = "0.11.3"

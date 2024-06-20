@@ -142,14 +142,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9d297deb1925b89f2ccc13d7635fa0714f12c87adce1c75356b39ca9b7178567"
 
 [[package]]
-name = "basic_server"
-version = "0.1.0"
-dependencies = [
- "env_logger",
- "metacontrols-server",
-]
-
-[[package]]
 name = "bincode"
 version = "1.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -734,6 +726,8 @@ dependencies = [
 name = "metacontrols-server"
 version = "0.1.0"
 dependencies = [
+ "egui_demo_lib",
+ "env_logger",
  "futures-util",
  "log",
  "metacontrols-common",
@@ -1235,15 +1229,6 @@ dependencies = [
  "form_urlencoded",
  "idna",
  "percent-encoding",
-]
-
-[[package]]
-name = "using_demo_lib"
-version = "0.1.0"
-dependencies = [
- "egui_demo_lib",
- "env_logger",
- "metacontrols-server",
 ]
 
 [[package]]

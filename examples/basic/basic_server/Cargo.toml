@@ -1,8 +1,0 @@
-[package]
-name = "basic_server"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-env_logger = "0.11.3"
-metacontrols-server = { path = "../../../server" }
