@@ -1,21 +1,26 @@
+use std::any::Any;
+
 use egui::Context;
-use metacontrols_common::{egui::{self, RawInput}, ClientToServer, ServerToClient};
+use metacontrols_common::{egui::{self, ahash::HashMap, RawInput}, ClientToServer, ServerToClient};
+
+pub type UserStore = HashMap<&'static str, Box<dyn Any + Send + Sync + 'static>>;
 
 #[derive(Default)]
 pub struct ClientGuiHandler {
     ctx: egui::Context,
     latest_blank_input: Option<RawInput>,
+    user_storage: UserStore,
 }
 
 impl ClientGuiHandler {
     pub fn new() -> Self {
         let ctx = Context::default();
-        Self { ctx, latest_blank_input: None }
+        Self { ctx, latest_blank_input: None, user_storage: Default::default() }
     }
 
     pub fn handle_packet_in_ui(
         &mut self,
-        ui_func: &mut dyn FnMut(&Context) -> (),
+        ui_func: &mut dyn FnMut(&Context, &mut UserStore) -> (),
         packet: ClientToServer,
     ) -> Option<ServerToClient> {
         let ClientToServer { raw_input } = packet;
@@ -33,7 +38,7 @@ impl ClientGuiHandler {
 
     pub fn handle_blank_packet_in_ui(
         &mut self,
-        ui_func: &mut dyn FnMut(&Context) -> (),
+        ui_func: &mut dyn FnMut(&Context, &mut UserStore) -> (),
     ) -> Option<ServerToClient> {
         self.latest_blank_input.clone().map(|raw_input| {
             self.handle_raw_input_in_ui(ui_func, raw_input)
@@ -42,10 +47,12 @@ impl ClientGuiHandler {
 
     fn handle_raw_input_in_ui(
         &mut self,
-        ui_func: &mut dyn FnMut(&Context) -> (),
+        ui_func: &mut dyn FnMut(&Context, &mut UserStore) -> (),
         raw_input: RawInput,
     ) -> ServerToClient {
-        let rendered = self.ctx.run(raw_input, |ctx| ui_func(ctx));
+
+        let rendered = self.ctx.run(raw_input, |ctx| ui_func(ctx, &mut self.user_storage));
+
         ServerToClient { rendered }
     }
 

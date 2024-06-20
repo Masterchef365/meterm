@@ -18,7 +18,7 @@ fn main() {
 
         let mut demo = DemoWindows::default();
 
-        server.show_on_clients(|ctx| {
+        server.show_on_clients(|ctx, _| {
             demo.ui(ctx);
         });
 

@@ -9,14 +9,26 @@ fn main() {
 
     let mut counter = 0;
 
+    let mut user_counter: usize = 0;
+
     // We want 20 ticks per second
     let desired_tickrate = 90.0;
 
     loop {
         let tick_start = Instant::now();
 
-        server.show_on_clients(|ctx| {
+        server.show_on_clients(|ctx, user| {
+            let number = user
+                .entry("number")
+                .or_insert_with(|| {
+                    user_counter += 1;
+                    Box::new(user_counter)
+                })
+                .downcast_ref::<usize>()
+                .unwrap();
+
             egui::CentralPanel::default().show(ctx, |ui| {
+                ui.label(format!("You are user #{}", number));
                 if ui.button(format!("Hello world! {}", counter)).clicked() {
                     counter += 1;
                 }
