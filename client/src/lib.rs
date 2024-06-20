@@ -105,7 +105,6 @@ impl ClientImpl {
             Some(WsEvent::Opened) => dbg!(self.open = true),
             Some(WsEvent::Message(WsMessage::Binary(msg))) => {
                 info!("Length {}", msg.len());
-                info!("Content {}", String::from_utf8(msg.clone()).unwrap());
                 self.draw = Some(deserialize::<ServerToClient>(&msg).unwrap())
             }
             Some(WsEvent::Error(e)) => return Err(format!("{e:#?}")),
