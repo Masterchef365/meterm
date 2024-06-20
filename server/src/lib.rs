@@ -75,6 +75,10 @@ async fn accept_connection(
                     Some(Ok(Message::Binary(msg))) => tx.send(
                         metacontrols_common::deserialize::<ClientToServer>(&msg).unwrap()
                     ).unwrap(),
+                    Some(Ok(Message::Close(_))) => {
+                        info!("Graceful shutdown");
+                        break;
+                    },
                     Some(Err(e)) => {
                         warn!("Receiving from stream; {}", e);
                         break;
