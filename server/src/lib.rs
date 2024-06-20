@@ -17,6 +17,7 @@ pub struct Server {
     new_client_rx: std::sync::mpsc::Receiver<Client>,
     clients: Vec<Client>,
     runtime: tokio::runtime::Runtime,
+    force_repaint: bool,
 }
 
 pub struct Client {
@@ -37,6 +38,7 @@ impl Server {
             runtime,
             new_client_rx,
             clients: vec![],
+            force_repaint: false,
         }
     }
 
@@ -44,10 +46,14 @@ impl Server {
         // Register new clients
         self.clients.extend(self.new_client_rx.try_iter());
 
+        let mut any_requested_repaint = false;
+
         // Handle each client
         for client in &mut self.clients {
-            client.handle_ctx(&mut ui_func);
+            any_requested_repaint |= client.handle_ctx(&mut ui_func, self.force_repaint);
         }
+
+        self.force_repaint = any_requested_repaint;
     }
 }
 
@@ -114,12 +120,27 @@ async fn server_loop(addr: String, new_client_tx: std::sync::mpsc::Sender<Client
 }
 
 impl Client {
-    fn handle_ctx(&mut self, ui_func: &mut dyn FnMut(&Context) -> ()) {
+    fn handle_ctx(&mut self, ui_func: &mut dyn FnMut(&Context), force_update: bool) -> bool {
+        let mut any_requested_repaint = false;
+
+        // Update clients which updated
+        let mut needs_blank_update = force_update;
         for packet in self.rx.try_iter() {
+            needs_blank_update = false;
             if let Some(return_packet) = self.gui_handler.handle_packet_in_ui(ui_func, packet) {
+                any_requested_repaint = true;
                 let _ = self.tx.blocking_send(return_packet);
             }
         }
+
+        // Use an eventless version of the last raw input to generate an update
+        if needs_blank_update {
+            if let Some(return_packet) = self.gui_handler.handle_blank_packet_in_ui(ui_func) {
+                let _ = self.tx.blocking_send(return_packet);
+            }
+        }
+
+        any_requested_repaint
     }
 }
 
