@@ -2,7 +2,7 @@ use egui::{mutex::Mutex, Event, Id, InputState, RawInput, Rect, Sense, Ui, Vec2,
 use ewebsock::{WsEvent, WsMessage};
 use metacontrols_common::{
     deserialize,
-    egui::{self, epaint::ClippedShape, FullOutput},
+    egui::{self, epaint::ClippedShape, Context, FullOutput},
     serialize, ClientToServer, ServerToClient,
 };
 use std::sync::Arc;
@@ -33,7 +33,7 @@ impl Widget for ServerWidget {
         let client = ui.ctx().memory_mut(|mem| {
             mem.data
                 .get_temp_mut_or_insert_with(Id::new(&self.addr), || {
-                    Arc::new(Mutex::new(Client::new(self.clone())))
+                    Arc::new(Mutex::new(Client::new(self.clone(), ui.ctx())))
                 })
                 .clone()
         });
@@ -55,8 +55,9 @@ unsafe impl Sync for Client {}
 unsafe impl Send for Client {}
 
 impl Client {
-    fn new(view: ServerWidget) -> Self {
-        match ewebsock::connect(&view.addr, Default::default()) {
+    fn new(view: ServerWidget, ctx: &Context) -> Self {
+        let ctx = ctx.clone();
+        match ewebsock::connect_with_wakeup(&view.addr, Default::default(), move || ctx.request_repaint()) {
             Ok((tx, rx)) => Self::Success(ClientImpl::new(tx, rx, view)),
             Err(e) => Self::Failure {
                 error: format!("{:?}", e),
