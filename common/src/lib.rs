@@ -14,12 +14,12 @@ pub struct ClientToServer {
     pub raw_input: egui::RawInput,
 }
 
-#[cfg(feature = "bincode")]
+#[cfg(not(feature = "json"))]
 pub fn serialize<T: Serialize>(val: &T) -> bincode::Result<Vec<u8>> {
     bincode::serialize(val)
 }
 
-#[cfg(feature = "bincode")]
+#[cfg(not(feature = "json"))]
 pub fn deserialize<T: DeserializeOwned>(bytes: &[u8]) -> bincode::Result<T> {
     bincode::deserialize(bytes)
 }
