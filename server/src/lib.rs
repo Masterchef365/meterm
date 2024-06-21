@@ -66,9 +66,13 @@ async fn accept_connection(
     tx: std::sync::mpsc::Sender<ClientToServer>,
     mut rx: tokio::sync::mpsc::Receiver<ServerToClient>,
 ) {
-    let mut ws_stream = tokio_tungstenite::accept_async(stream)
-        .await
-        .expect("Error during the websocket handshake occurred");
+    let mut ws_stream = match tokio_tungstenite::accept_async(stream).await {
+        Ok(stream) => stream,
+        Err(e) => {
+            warn!("Error during the websocket handshake occurred; {e}");
+            return;
+        }
+    };
 
     info!("New WebSocket connection");
 
