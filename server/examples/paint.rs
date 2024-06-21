@@ -50,6 +50,7 @@ impl Painting {
         ui.horizontal(|ui| {
             ui.label("Stroke:");
             //ui.add(&mut self.stroke);
+            ui.color_edit_button_srgba(&mut self.stroke.color);
             ui.separator();
             if ui.button("Clear Painting").clicked() {
                 self.lines.clear();
@@ -90,9 +91,10 @@ impl Painting {
             .iter()
             .filter(|line| line.len() >= 2)
             .map(|line| {
-                let points: Vec<Pos2> = line.iter().map(|p| to_screen * *p).collect();
-                egui::Shape::line(points, self.stroke)
-            });
+                line.iter().map(|p| to_screen * *p).map(|point|
+                    egui::Shape::circle_filled(point, 2.0, self.stroke.color))
+                //egui::Shape::line(points, self.stroke)
+            }).flatten();
 
         painter.extend(shapes);
 
