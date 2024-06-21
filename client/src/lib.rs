@@ -5,9 +5,7 @@ use meterm_common::{
     delta_encoding::{self, Decoder},
     deserialize,
     egui::{
-        self,
-        epaint::{ClippedShape, TextShape},
-        Context, FullOutput, Shape,
+        self, epaint::{ClippedShape, TextShape}, Context, CursorIcon, FullOutput, Shape
     },
     serialize, ClientToServer, ServerToClient,
 };
@@ -138,14 +136,51 @@ impl ClientImpl {
         let resp = ui.allocate_response(self.view.desired_size, Sense::click_and_drag());
 
         // Draw the server contents
-        if let Some(full_output) = &self.latest_frame {
+        if let Some(full_output) = &mut self.latest_frame {
+            let offset = resp.rect.left_top().to_vec2();
+
+            // Draw offset shapes
             for ClippedShape { clip_rect, shape } in &full_output.shapes {
-                let offset = resp.rect.left_top().to_vec2();
                 let mut shape = shape.clone();
                 shape.translate(offset);
                 ui.set_clip_rect(clip_rect.translate(offset));
                 ui.painter().add(shape.clone());
             }
+
+            // TODO: Sync textures!
+
+            // Handle platform output
+            let pt = &mut full_output.platform_output;
+            ui.ctx().output_mut(|client| {
+                if client.open_url.is_none() {
+                    client.open_url = pt.open_url.take();
+                }
+
+                if pt.cursor_icon != CursorIcon::default() {
+                    client.cursor_icon = pt.cursor_icon;
+                }
+
+                if !pt.copied_text.is_empty() && client.copied_text.is_empty() {
+                    client.copied_text = pt.copied_text.clone();
+                }
+
+                client.mutable_text_under_cursor |= pt.mutable_text_under_cursor;
+
+                if client.accesskit_update.is_none() {
+                    client.accesskit_update = pt.accesskit_update.take();
+                }
+
+                if client.ime.is_none() {
+                    let mut ime = pt.ime.take();
+                    if let Some(ime) = &mut ime {
+                        ime.rect = ime.rect.translate(offset);
+                        ime.cursor_rect = ime.cursor_rect.translate(offset);
+                    }
+                    client.ime = ime;
+                }
+
+                client.events.extend(pt.events.drain(..));
+            });
         }
 
         // Capture input
