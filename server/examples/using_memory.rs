@@ -1,7 +1,7 @@
 use std::time::Instant;
 
-use metacontrols_common::egui::Id;
-use metacontrols_server::{
+use meterm_common::egui::Id;
+use meterm_server::{
     egui::{self, DragValue, Slider},
     Server,
 };

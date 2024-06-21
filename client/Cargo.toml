@@ -1,9 +1,9 @@
 [package]
-name = "metacontrols-client"
+name = "meterm-client"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
 ewebsock = { version = "0.6.0", features = ["tls"] }
-metacontrols-common = { path = "../common" }
+meterm-common = { path = "../common" }
 log = "0.4.21"

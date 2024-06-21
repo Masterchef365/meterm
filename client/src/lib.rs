@@ -1,7 +1,7 @@
 use egui::{mutex::Mutex, Event, Id, InputState, RawInput, Rect, Sense, Ui, Vec2, Widget};
 use ewebsock::{WsEvent, WsMessage};
 use log::{info, trace};
-use metacontrols_common::{
+use meterm_common::{
     delta_encoding::{self, Decoder},
     deserialize,
     egui::{

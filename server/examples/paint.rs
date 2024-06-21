@@ -1,7 +1,7 @@
 use std::time::Instant;
 
-use metacontrols_common::egui::{Color32, Pos2, Rect, Sense, Stroke, Ui};
-use metacontrols_server::{egui::{self, DragValue, Slider}, Server};
+use meterm_common::egui::{Color32, Pos2, Rect, Sense, Stroke, Ui};
+use meterm_server::{egui::{self, DragValue, Slider}, Server};
 
 fn main() {
     env_logger::try_init().unwrap();

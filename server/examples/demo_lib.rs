@@ -4,8 +4,8 @@ use std::{
 };
 
 use egui_demo_lib::DemoWindows;
-use metacontrols_common::egui::Id;
-use metacontrols_server::{egui, Server};
+use meterm_common::egui::Id;
+use meterm_server::{egui, Server};
 
 #[derive(Default)]
 struct SafeDemo(DemoWindows);

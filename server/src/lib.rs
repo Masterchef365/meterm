@@ -5,12 +5,12 @@ use futures_util::SinkExt;
 use futures_util::{stream::StreamExt, TryStreamExt};
 use handler::ClientGuiHandler;
 use log::{error, info, warn};
-use metacontrols_common::delta_encoding::Encoder;
-use metacontrols_common::{delta_encoding, ClientToServer, ServerToClient};
+use meterm_common::delta_encoding::Encoder;
+use meterm_common::{delta_encoding, ClientToServer, ServerToClient};
 use tokio::net::{TcpListener, TcpStream, ToSocketAddrs};
 use tokio_tungstenite::tungstenite::Message;
 
-pub use metacontrols_common::egui;
+pub use meterm_common::egui;
 
 mod handler;
 
@@ -81,7 +81,7 @@ async fn accept_connection(
             msg = ws_stream.next() => {
                 match msg {
                     Some(Ok(Message::Binary(msg))) => tx.send(
-                        metacontrols_common::deserialize::<ClientToServer>(&msg).unwrap()
+                        meterm_common::deserialize::<ClientToServer>(&msg).unwrap()
                     ).unwrap(),
                     Some(Ok(Message::Close(_))) => {
                         info!("Graceful shutdown");
@@ -95,7 +95,7 @@ async fn accept_connection(
                 }
             },
             Some(val) = rx.recv() => {
-                let ser = metacontrols_common::serialize::<ServerToClient>(&val).unwrap();
+                let ser = meterm_common::serialize::<ServerToClient>(&val).unwrap();
                 let _ = ws_stream.send(Message::Binary(
                         ser
                 )).await;

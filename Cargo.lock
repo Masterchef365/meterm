@@ -576,16 +576,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "78ca9ab1a0babb1e7d5695e3530886289c18cf2f87ec19a575a0abdce112e3a3"
 
 [[package]]
-name = "metacontrols-client"
+name = "meterm-client"
 version = "0.1.0"
 dependencies = [
  "ewebsock",
  "log",
- "metacontrols-common",
+ "meterm-common",
 ]
 
 [[package]]
-name = "metacontrols-common"
+name = "meterm-common"
 version = "0.1.0"
 dependencies = [
  "bincode",
@@ -595,14 +595,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "metacontrols-server"
+name = "meterm-server"
 version = "0.1.0"
 dependencies = [
  "egui_demo_lib",
  "env_logger",
  "futures-util",
  "log",
- "metacontrols-common",
+ "meterm-common",
  "tokio",
  "tokio-tungstenite",
 ]

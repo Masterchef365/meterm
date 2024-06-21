@@ -1,7 +1,7 @@
 use std::any::Any;
 
 use egui::Context;
-use metacontrols_common::{egui::{self, ahash::HashMap, FullOutput, RawInput}, ClientToServer};
+use meterm_common::{egui::{self, ahash::HashMap, FullOutput, RawInput}, ClientToServer};
 
 #[derive(Default)]
 pub struct ClientGuiHandler {

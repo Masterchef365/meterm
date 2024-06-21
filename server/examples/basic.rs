@@ -1,4 +1,4 @@
-use metacontrols_server::{Server, egui};
+use meterm_server::{Server, egui};
 
 fn main() {
     let mut server = Server::new("0.0.0.0:5000");
