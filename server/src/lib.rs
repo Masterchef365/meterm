@@ -12,8 +12,6 @@ use tokio_tungstenite::tungstenite::Message;
 
 pub use metacontrols_common::egui;
 
-pub use handler::UserStore;
-
 mod handler;
 
 pub struct Server {
@@ -46,7 +44,7 @@ impl Server {
         }
     }
 
-    pub fn show_on_clients(&mut self, mut ui_func: impl FnMut(&Context, &mut UserStore)) {
+    pub fn show_on_clients(&mut self, mut ui_func: impl FnMut(&Context)) {
         // Register new clients
         self.clients.extend(self.new_client_rx.try_iter());
 
@@ -133,7 +131,7 @@ async fn server_loop(addr: String, new_client_tx: std::sync::mpsc::Sender<Client
 impl Client {
     fn handle_ctx(
         &mut self,
-        ui_func: &mut dyn FnMut(&Context, &mut UserStore),
+        ui_func: &mut dyn FnMut(&Context),
         force_update: bool,
     ) -> bool {
         let mut any_requested_repaint = false;

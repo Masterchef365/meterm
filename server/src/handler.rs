@@ -3,13 +3,10 @@ use std::any::Any;
 use egui::Context;
 use metacontrols_common::{egui::{self, ahash::HashMap, FullOutput, RawInput}, ClientToServer};
 
-pub type UserStore = HashMap<&'static str, Box<dyn Any + Send + Sync + 'static>>;
-
 #[derive(Default)]
 pub struct ClientGuiHandler {
     ctx: egui::Context,
     latest_blank_input: Option<RawInput>,
-    user_storage: UserStore,
 }
 
 impl ClientGuiHandler {
@@ -18,13 +15,12 @@ impl ClientGuiHandler {
         Self { 
             ctx, 
             latest_blank_input: None, 
-            user_storage: Default::default(),
         }
     }
 
     pub fn handle_packet_in_ui(
         &mut self,
-        ui_func: &mut dyn FnMut(&Context, &mut UserStore) -> (),
+        ui_func: &mut dyn FnMut(&Context) -> (),
         packet: ClientToServer,
     ) -> Option<FullOutput> {
         let ClientToServer { raw_input } = packet;
@@ -42,7 +38,7 @@ impl ClientGuiHandler {
 
     pub fn handle_blank_packet_in_ui(
         &mut self,
-        ui_func: &mut dyn FnMut(&Context, &mut UserStore) -> (),
+        ui_func: &mut dyn FnMut(&Context) -> (),
     ) -> Option<FullOutput> {
         self.latest_blank_input.clone().map(|raw_input| {
             self.handle_raw_input_in_ui(ui_func, raw_input)
@@ -51,10 +47,10 @@ impl ClientGuiHandler {
 
     fn handle_raw_input_in_ui(
         &mut self,
-        ui_func: &mut dyn FnMut(&Context, &mut UserStore) -> (),
+        ui_func: &mut dyn FnMut(&Context) -> (),
         raw_input: RawInput,
     ) -> FullOutput {
-        self.ctx.run(raw_input, |ctx| ui_func(ctx, &mut self.user_storage))
+        self.ctx.run(raw_input, |ctx| ui_func(ctx))
     }
 
 }

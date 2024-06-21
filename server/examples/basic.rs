@@ -1,6 +1,12 @@
 use std::time::Instant;
 
-use metacontrols_server::{egui::{self, DragValue, Slider}, Server};
+use metacontrols_common::egui::Id;
+use metacontrols_server::{
+    egui::{self, DragValue, Slider},
+    Server,
+};
+
+struct UserNumber(usize);
 
 fn main() {
     env_logger::try_init().unwrap();
@@ -18,18 +24,17 @@ fn main() {
     loop {
         let tick_start = Instant::now();
 
-        server.show_on_clients(|ctx, user| {
-            let number = user
-                .entry("number")
-                .or_insert_with(|| {
-                    user_counter += 1;
-                    Box::new(user_counter)
-                })
-                .downcast_ref::<usize>()
-                .unwrap();
+        server.show_on_clients(|ctx| {
+            let user_number = ctx.memory_mut(|mem| {
+                *mem.data
+                    .get_temp_mut_or_insert_with(Id::new("user_number"), || {
+                        user_counter += 1;
+                        user_counter
+                    })
+            });
 
             egui::CentralPanel::default().show(ctx, |ui| {
-                ui.label(format!("You are user #{}", number));
+                ui.label(format!("You are user #{}", user_number));
                 if ui.button(format!("Hello world! {}", counter)).clicked() {
                     counter += 1;
                 }
