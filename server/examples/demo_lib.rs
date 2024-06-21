@@ -23,7 +23,7 @@ fn main() {
     loop {
         let tick_start = Instant::now();
 
-        server.show_on_clients(|ctx| {
+        server.for_each_client(|ctx| {
             let demo = ctx.memory_mut(|mem| {
                 mem.data
                     .get_temp_mut_or_insert_with(Id::new("Demo"), || {

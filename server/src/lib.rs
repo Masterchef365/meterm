@@ -44,7 +44,7 @@ impl Server {
         }
     }
 
-    pub fn show_on_clients(&mut self, mut ui_func: impl FnMut(&Context)) {
+    pub fn for_each_client(&mut self, mut ui_func: impl FnMut(&Context)) {
         // Register new clients
         self.clients.extend(self.new_client_rx.try_iter());
 

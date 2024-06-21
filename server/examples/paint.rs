@@ -15,7 +15,7 @@ fn main() {
     loop {
         let tick_start = Instant::now();
 
-        server.show_on_clients(|ctx| {
+        server.for_each_client(|ctx| {
             egui::CentralPanel::default().show(ctx, |ui| {
                 painting.ui_control(ui);
                 egui::Frame::canvas(ui.style()).show(ui, |ui| {
