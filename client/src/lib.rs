@@ -124,7 +124,7 @@ impl ClientImpl {
                 Some(WsEvent::Message(WsMessage::Binary(msg))) => {
                     info!("Length {}", msg.len());
                     let packet: ServerToClient = deserialize(&msg).expect("Deserialize");
-                    if let Some(full_output) = self.decoder.decode(packet.update.clone()) {
+                    if let Some(full_output) = self.decoder.decode(packet.update.clone(), ui.ctx()) {
                         self.latest_frame = Some(full_output);
                     }
                 }
