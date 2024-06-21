@@ -50,9 +50,11 @@ impl Server {
         // Register new clients
         self.clients.extend(self.new_client_rx.try_iter());
 
-        let mut any_requested_repaint = false;
+        // Drop disconnected clients
+        self.clients.retain(|client| client.is_alive());
 
         // Handle each client
+        let mut any_requested_repaint = false;
         for client in &mut self.clients {
             any_requested_repaint |= client.handle_ctx(&mut ui_func, self.force_repaint);
         }
@@ -158,6 +160,10 @@ impl Client {
         }
 
         any_requested_repaint
+    }
+
+    fn is_alive(&self) -> bool {
+        !self.tx.is_closed()
     }
 }
 
