@@ -1,6 +1,10 @@
-use egui::{epaint::ClippedShape, FullOutput};
+use egui::{
+    epaint::{ClippedShape, TextShape},
+    text::LayoutJob,
+    Context, FullOutput, Galley, Shape,
+};
 
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
 use crate::hash_abuse::{EqByHash, HashBySerialize};
 
@@ -24,6 +28,7 @@ pub struct Encoder {
 }
 
 pub struct Decoder {
+    galley_cache: HashMap<EqByHash<HashBySerialize<Arc<LayoutJob>>>, Arc<Galley>>,
     memory: Option<FullOutput>,
     pub debug_mode: bool,
 }
@@ -86,19 +91,33 @@ impl Encoder {
 
 impl Decoder {
     pub fn new() -> Self {
-        Self { memory: None, debug_mode: false }
+        Self {
+            memory: None,
+            debug_mode: false,
+            galley_cache: Default::default(),
+        }
     }
 
-    pub fn decode(&mut self, update: UpdateData) -> Option<FullOutput> {
+    pub fn decode(&mut self, update: UpdateData, ctx: &Context) -> Option<FullOutput> {
         match update {
-            UpdateData::FullUpdate(full) => {
+            UpdateData::FullUpdate(mut full) => {
+                let doctored = full
+                    .shapes
+                    .drain(..)
+                    .map(|shape| self.doctor_shape(ctx, shape))
+                    .collect();
+                full.shapes = doctored;
+
+                self.galley_cache = Default::default();
                 self.memory = Some(full.clone());
                 Some(full)
             }
             UpdateData::Partial(mut upd, partials) => {
                 for part in partials {
                     match part {
-                        PartialUpdate::Shape(shape) => upd.shapes.push(shape),
+                        PartialUpdate::Shape(shape) => {
+                            upd.shapes.push(self.doctor_shape(ctx, shape))
+                        }
                         PartialUpdate::Reference(index) => {
                             if !self.debug_mode {
                                 upd.shapes.push(self.memory.as_mut()?.shapes[index].clone());
@@ -110,5 +129,24 @@ impl Decoder {
             }
         }
     }
-}
 
+    pub fn doctor_shape(&mut self, ctx: &Context, mut shape: ClippedShape) -> ClippedShape {
+        match &mut shape.shape {
+            Shape::Text(text) => self.doctor_text(ctx, text),
+            _ => (),
+        }
+
+        shape
+    }
+
+    pub fn doctor_text(&mut self, ctx: &Context, shape: &mut TextShape) {
+        let job = shape.galley.job.clone();
+        let galley = self
+            .galley_cache
+            .entry(EqByHash(HashBySerialize(job.clone())))
+            .or_insert_with(|| ctx.fonts(|r| r.layout_job(Arc::unwrap_or_clone(job))))
+            .clone();
+
+        shape.galley = galley;
+    }
+}
