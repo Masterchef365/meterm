@@ -122,8 +122,9 @@ impl ClientImpl {
             match self.rx.try_recv() {
                 Some(WsEvent::Opened) => dbg!(self.open = true),
                 Some(WsEvent::Message(WsMessage::Binary(msg))) => {
+                    std::fs::write("thing.data", &msg).unwrap();
                     info!("Length {}", msg.len());
-                    let packet: ServerToClient = deserialize(&msg).unwrap();
+                    let packet: ServerToClient = deserialize(&msg).expect("Deserialize");
                     if let Some(full_output) = self.decoder.decode(packet.update.clone()) {
                         let full_output = doctor_frame(full_output, ui.ctx());
                         self.latest_frame = Some(full_output);

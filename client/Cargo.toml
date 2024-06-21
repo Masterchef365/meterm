@@ -4,6 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-ewebsock = "0.6.0"
+ewebsock = { version = "0.6.0", features = ["tls"] }
 metacontrols-common = { path = "../common" }
 log = "0.4.21"
