@@ -18,7 +18,9 @@ fn main() {
         server.show_on_clients(|ctx, _user| {
             egui::CentralPanel::default().show(ctx, |ui| {
                 painting.ui_control(ui);
-                painting.ui_content(ui);
+                egui::Frame::canvas(ui.style()).show(ui, |ui| {
+                    painting.ui_content(ui);
+                });
             });
         });
 
