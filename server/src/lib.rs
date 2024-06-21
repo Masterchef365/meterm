@@ -92,9 +92,9 @@ async fn accept_connection(
             },
             Some(val) = rx.recv() => {
                 let ser = metacontrols_common::serialize::<ServerToClient>(&val).unwrap();
-                ws_stream.send(Message::Binary(
+                let _ = ws_stream.send(Message::Binary(
                         ser
-                )).await.unwrap();
+                )).await;
             },
         }
         // Always await on at least something
