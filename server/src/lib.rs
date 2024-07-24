@@ -12,6 +12,8 @@ use tokio_tungstenite::tungstenite::Message;
 
 pub use meterm_common::egui;
 
+pub mod utils;
+
 mod handler;
 
 pub struct Server {
