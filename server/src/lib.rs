@@ -10,6 +10,9 @@ use meterm_common::{delta_encoding, ClientToServer, ServerToClient};
 use tokio::net::{TcpListener, TcpStream, ToSocketAddrs};
 use tokio_tungstenite::tungstenite::Message;
 
+#[cfg(feature = "rayon")]
+use rayon::prelude::*;
+
 pub use meterm_common::egui;
 
 pub mod utils;
@@ -31,6 +34,12 @@ pub struct Client {
     // TODO: task join handle here
 }
 
+#[cfg(not(feature = "rayon"))]
+trait UiFunc: FnMut(&Context) {}
+
+#[cfg(feature = "rayon")]
+trait UiFunc: FnMut(&Context) + Send + Sync {}
+
 impl Server {
     pub fn new(addr: impl Into<String>) -> Self {
         let (new_client_tx, new_client_rx) = std::sync::mpsc::channel();
@@ -46,7 +55,7 @@ impl Server {
         }
     }
 
-    pub fn for_each_client(&mut self, mut ui_func: impl FnMut(&Context)) {
+    pub fn for_each_client(&mut self, mut ui_func: impl UiFunc) {
         // Register new clients
         self.clients.extend(self.new_client_rx.try_iter());
 
@@ -55,8 +64,21 @@ impl Server {
 
         // Handle each client
         let mut any_requested_repaint = false;
-        for client in &mut self.clients {
-            any_requested_repaint |= client.handle_ctx(&mut ui_func, self.force_repaint);
+
+        #[cfg(not(feature = "rayon"))]
+        {
+            any_requested_repaint = self
+                .clients
+                .iter_mut()
+                .any(|client| client.handle_ctx(&mut ui_func, self.force_repaint));
+        }
+
+        #[cfg(feature = "rayon")]
+        {
+            any_requested_repaint = self
+                .clients
+                .par_iter_mut()
+                .any(move |client| client.handle_ctx(&mut ui_func, self.force_repaint));
         }
 
         self.force_repaint = any_requested_repaint;
@@ -135,11 +157,7 @@ async fn server_loop(addr: String, new_client_tx: std::sync::mpsc::Sender<Client
 }
 
 impl Client {
-    fn handle_ctx(
-        &mut self,
-        ui_func: &mut dyn FnMut(&Context),
-        force_update: bool,
-    ) -> bool {
+    fn handle_ctx(&mut self, ui_func: &mut dyn FnMut(&Context), force_update: bool) -> bool {
         let mut any_requested_repaint = false;
 
         // Update clients which updated

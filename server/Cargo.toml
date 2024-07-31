@@ -9,6 +9,7 @@ tokio = { version = "1", features = ["full"] }
 log = "0.4.21"
 futures-util = "0.3.30"
 meterm-common = { path = "../common" }
+rayon = { version = "1.10.0", optional = true }
 
 [dev-dependencies]
 #egui_demo_lib = { path = "../../egui/crates/egui_demo_lib" }
