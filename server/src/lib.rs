@@ -20,14 +20,14 @@ pub mod utils;
 mod handler;
 
 pub struct Server {
-    new_client_rx: std::sync::mpsc::Receiver<Client>,
+    new_client_rx: tokio::sync::mpsc::Receiver<Client>,
     clients: Vec<Client>,
     runtime: tokio::runtime::Runtime,
     force_repaint: bool,
 }
 
 pub struct Client {
-    rx: std::sync::mpsc::Receiver<ClientToServer>,
+    rx: tokio::sync::mpsc::Receiver<ClientToServer>,
     tx: tokio::sync::mpsc::Sender<ServerToClient>,
     gui_handler: ClientGuiHandler,
     encoder: delta_encoding::Encoder,
@@ -35,14 +35,11 @@ pub struct Client {
 }
 
 #[cfg(not(feature = "rayon"))]
-trait UiFunc: FnMut(&Context) {}
-
-#[cfg(feature = "rayon")]
-trait UiFunc: FnMut(&Context) + Send + Sync {}
+pub trait UiFunc: FnMut(&Context) {}
 
 impl Server {
     pub fn new(addr: impl Into<String>) -> Self {
-        let (new_client_tx, new_client_rx) = std::sync::mpsc::channel();
+        let (new_client_tx, new_client_rx) = tokio::sync::mpsc::channel::<Client>(100);
 
         let runtime = tokio::runtime::Runtime::new().unwrap();
         runtime.spawn(server_loop(addr.into(), new_client_tx));
@@ -55,9 +52,14 @@ impl Server {
         }
     }
 
-    pub fn for_each_client(&mut self, mut ui_func: impl UiFunc) {
+    pub fn for_each_client<F>(&mut self, mut ui_func: F)
+    where
+        F: FnMut(&Context) + Send + Sync,
+    {
         // Register new clients
-        self.clients.extend(self.new_client_rx.try_iter());
+        while let Ok(client) = self.new_client_rx.try_recv() {
+            self.clients.push(client);
+        }
 
         // Drop disconnected clients
         self.clients.retain(|client| client.is_alive());
@@ -87,7 +89,7 @@ impl Server {
 
 async fn accept_connection(
     stream: TcpStream,
-    tx: std::sync::mpsc::Sender<ClientToServer>,
+    tx: tokio::sync::mpsc::Sender<ClientToServer>,
     mut rx: tokio::sync::mpsc::Receiver<ServerToClient>,
 ) {
     let mut ws_stream = match tokio_tungstenite::accept_async(stream).await {
@@ -106,7 +108,7 @@ async fn accept_connection(
                 match msg {
                     Some(Ok(Message::Binary(msg))) => tx.send(
                         meterm_common::deserialize::<ClientToServer>(&msg).unwrap()
-                    ).unwrap(),
+                    ).await.unwrap(),
                     Some(Ok(Message::Close(_))) => {
                         info!("Graceful shutdown");
                         break;
@@ -130,17 +132,17 @@ async fn accept_connection(
     }
 }
 
-async fn server_loop(addr: String, new_client_tx: std::sync::mpsc::Sender<Client>) {
+async fn server_loop(addr: String, new_client_tx: tokio::sync::mpsc::Sender<Client>) {
     let try_socket = TcpListener::bind(&addr).await;
 
     let listener = try_socket.expect("Failed to bind");
 
     while let Ok((stream, _)) = listener.accept().await {
-        let (client_to_server_tx, client_to_server_rx) = std::sync::mpsc::channel();
+        let (client_to_server_tx, client_to_server_rx) = tokio::sync::mpsc::channel(100);
         let (server_to_client_tx, server_to_client_rx) = tokio::sync::mpsc::channel(100);
 
         new_client_tx
-            .send(Client {
+            .blocking_send(Client {
                 rx: client_to_server_rx,
                 tx: server_to_client_tx,
                 gui_handler: ClientGuiHandler::new(),
@@ -162,7 +164,7 @@ impl Client {
 
         // Update clients which updated
         let mut needs_blank_update = force_update;
-        for packet in self.rx.try_iter() {
+        while let Ok(packet) = self.rx.try_recv() {
             needs_blank_update = false;
             if let Some(return_packet) = self.gui_handler.handle_packet_in_ui(ui_func, packet) {
                 any_requested_repaint = true;
