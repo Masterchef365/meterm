@@ -12,5 +12,5 @@ meterm-common = { path = "../common" }
 
 [dev-dependencies]
 #egui_demo_lib = { path = "../../egui/crates/egui_demo_lib" }
-egui_demo_lib  = { git = "https://github.com/Masterchef365/egui.git", branch = "no-usize-in-interface" }
+egui_demo_lib  = { git = "https://github.com/Masterchef365/egui.git", branch = "meterm" }
 env_logger = "0.11.3"

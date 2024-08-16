@@ -13,7 +13,7 @@ serde = { version = "1", features = ["derive"] }
 
 # NOTE: Enabled egui features must be the same between server and client!!
 #egui = { path = "../../egui/crates/egui", features = [
-egui = { git = "https://github.com/Masterchef365/egui.git", branch = "no-usize-in-interface", features = [
+egui = { git = "https://github.com/Masterchef365/egui.git", branch = "meterm", features = [
  "accesskit",
  "log",
  "ron",

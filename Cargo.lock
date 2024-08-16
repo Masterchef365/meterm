@@ -199,6 +199,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
+name = "color-hex"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ecdffb913a326b6c642290a0d0ec8e8d6597291acdc07cc4c9cb4b3635d44cf9"
+
+[[package]]
 name = "colorchoice"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -250,19 +256,22 @@ dependencies = [
 
 [[package]]
 name = "ecolor"
-version = "0.27.2"
-source = "git+https://github.com/Masterchef365/egui.git?branch=no-usize-in-interface#5a08e80b65b6e887f5afa6a2aa06d48b2a0a6fce"
+version = "0.28.1"
+source = "git+https://github.com/Masterchef365/egui.git?branch=meterm#922c5705a08a2d7fc57cc5ef88be2b539a73b895"
 dependencies = [
+ "color-hex",
+ "emath",
  "serde",
 ]
 
 [[package]]
 name = "egui"
-version = "0.27.2"
-source = "git+https://github.com/Masterchef365/egui.git?branch=no-usize-in-interface#5a08e80b65b6e887f5afa6a2aa06d48b2a0a6fce"
+version = "0.28.1"
+source = "git+https://github.com/Masterchef365/egui.git?branch=meterm#922c5705a08a2d7fc57cc5ef88be2b539a73b895"
 dependencies = [
  "accesskit",
  "ahash",
+ "emath",
  "epaint",
  "log",
  "nohash-hasher",
@@ -272,8 +281,8 @@ dependencies = [
 
 [[package]]
 name = "egui_demo_lib"
-version = "0.27.2"
-source = "git+https://github.com/Masterchef365/egui.git?branch=no-usize-in-interface#5a08e80b65b6e887f5afa6a2aa06d48b2a0a6fce"
+version = "0.28.1"
+source = "git+https://github.com/Masterchef365/egui.git?branch=meterm#922c5705a08a2d7fc57cc5ef88be2b539a73b895"
 dependencies = [
  "egui",
  "egui_extras",
@@ -284,9 +293,10 @@ dependencies = [
 
 [[package]]
 name = "egui_extras"
-version = "0.27.2"
-source = "git+https://github.com/Masterchef365/egui.git?branch=no-usize-in-interface#5a08e80b65b6e887f5afa6a2aa06d48b2a0a6fce"
+version = "0.28.1"
+source = "git+https://github.com/Masterchef365/egui.git?branch=meterm#922c5705a08a2d7fc57cc5ef88be2b539a73b895"
 dependencies = [
+ "ahash",
  "egui",
  "enum-map",
  "log",
@@ -296,16 +306,18 @@ dependencies = [
 
 [[package]]
 name = "egui_plot"
-version = "0.27.2"
-source = "git+https://github.com/Masterchef365/egui.git?branch=no-usize-in-interface#5a08e80b65b6e887f5afa6a2aa06d48b2a0a6fce"
+version = "0.28.1"
+source = "git+https://github.com/Masterchef365/egui.git?branch=meterm#922c5705a08a2d7fc57cc5ef88be2b539a73b895"
 dependencies = [
+ "ahash",
  "egui",
+ "emath",
 ]
 
 [[package]]
 name = "emath"
-version = "0.27.2"
-source = "git+https://github.com/Masterchef365/egui.git?branch=no-usize-in-interface#5a08e80b65b6e887f5afa6a2aa06d48b2a0a6fce"
+version = "0.28.1"
+source = "git+https://github.com/Masterchef365/egui.git?branch=meterm#922c5705a08a2d7fc57cc5ef88be2b539a73b895"
 dependencies = [
  "serde",
 ]
@@ -367,8 +379,8 @@ dependencies = [
 
 [[package]]
 name = "epaint"
-version = "0.27.2"
-source = "git+https://github.com/Masterchef365/egui.git?branch=no-usize-in-interface#5a08e80b65b6e887f5afa6a2aa06d48b2a0a6fce"
+version = "0.28.1"
+source = "git+https://github.com/Masterchef365/egui.git?branch=meterm#922c5705a08a2d7fc57cc5ef88be2b539a73b895"
 dependencies = [
  "ab_glyph",
  "ahash",
