@@ -257,7 +257,7 @@ dependencies = [
 [[package]]
 name = "ecolor"
 version = "0.28.1"
-source = "git+https://github.com/Masterchef365/egui.git?branch=meterm#6cf78946abfd040091c3664a800954f2fc3892ed"
+source = "git+https://github.com/Masterchef365/egui.git?branch=meterm#a62247fcd78894ba694f7d8d33f26c6a24fce0de"
 dependencies = [
  "color-hex",
  "emath",
@@ -267,7 +267,7 @@ dependencies = [
 [[package]]
 name = "egui"
 version = "0.28.1"
-source = "git+https://github.com/Masterchef365/egui.git?branch=meterm#6cf78946abfd040091c3664a800954f2fc3892ed"
+source = "git+https://github.com/Masterchef365/egui.git?branch=meterm#a62247fcd78894ba694f7d8d33f26c6a24fce0de"
 dependencies = [
  "accesskit",
  "ahash",
@@ -282,7 +282,7 @@ dependencies = [
 [[package]]
 name = "egui_demo_lib"
 version = "0.28.1"
-source = "git+https://github.com/Masterchef365/egui.git?branch=meterm#6cf78946abfd040091c3664a800954f2fc3892ed"
+source = "git+https://github.com/Masterchef365/egui.git?branch=meterm#a62247fcd78894ba694f7d8d33f26c6a24fce0de"
 dependencies = [
  "egui",
  "egui_extras",
@@ -294,7 +294,7 @@ dependencies = [
 [[package]]
 name = "egui_extras"
 version = "0.28.1"
-source = "git+https://github.com/Masterchef365/egui.git?branch=meterm#6cf78946abfd040091c3664a800954f2fc3892ed"
+source = "git+https://github.com/Masterchef365/egui.git?branch=meterm#a62247fcd78894ba694f7d8d33f26c6a24fce0de"
 dependencies = [
  "ahash",
  "egui",
@@ -307,7 +307,7 @@ dependencies = [
 [[package]]
 name = "egui_plot"
 version = "0.28.1"
-source = "git+https://github.com/Masterchef365/egui.git?branch=meterm#6cf78946abfd040091c3664a800954f2fc3892ed"
+source = "git+https://github.com/Masterchef365/egui.git?branch=meterm#a62247fcd78894ba694f7d8d33f26c6a24fce0de"
 dependencies = [
  "ahash",
  "egui",
@@ -317,7 +317,7 @@ dependencies = [
 [[package]]
 name = "emath"
 version = "0.28.1"
-source = "git+https://github.com/Masterchef365/egui.git?branch=meterm#6cf78946abfd040091c3664a800954f2fc3892ed"
+source = "git+https://github.com/Masterchef365/egui.git?branch=meterm#a62247fcd78894ba694f7d8d33f26c6a24fce0de"
 dependencies = [
  "serde",
 ]
@@ -380,7 +380,7 @@ dependencies = [
 [[package]]
 name = "epaint"
 version = "0.28.1"
-source = "git+https://github.com/Masterchef365/egui.git?branch=meterm#6cf78946abfd040091c3664a800954f2fc3892ed"
+source = "git+https://github.com/Masterchef365/egui.git?branch=meterm#a62247fcd78894ba694f7d8d33f26c6a24fce0de"
 dependencies = [
  "ab_glyph",
  "ahash",
