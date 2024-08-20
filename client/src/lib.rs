@@ -15,11 +15,13 @@ use std::sync::Arc;
 pub struct ServerWidget {
     pub addr: String,
     pub desired_size: Vec2,
+    pub debug_packets: bool,
 }
 
 impl ServerWidget {
     pub fn new(addr: impl Into<String>) -> Self {
         Self {
+            debug_packets: false,
             addr: addr.into(),
             desired_size: Vec2::new(200., 200.),
         }
@@ -27,6 +29,11 @@ impl ServerWidget {
 
     pub fn with_desired_size(mut self, size: Vec2) -> Self {
         self.desired_size = size;
+        self
+    }
+
+    pub fn debug_packets(mut self, is_on: bool) -> Self {
+        self.debug_packets = is_on;
         self
     }
 }
@@ -42,6 +49,7 @@ impl Widget for ServerWidget {
         });
 
         let mut lck = client.lock();
+        lck.set_debug_delta_encoding_packets(self.debug_packets);
         lck.show(ui, &self)
     }
 }
@@ -89,6 +97,12 @@ impl Client {
                 }
                 Ok(resp) => resp,
             },
+        }
+    }
+
+    fn set_debug_delta_encoding_packets(&mut self, is_on: bool) {
+        if let Self::Success(client) = self {
+            client.set_debug_delta_encoding_packets(is_on);
         }
     }
 }
@@ -196,6 +210,10 @@ impl ClientImpl {
         }
 
         Ok(resp)
+    }
+
+    fn set_debug_delta_encoding_packets(&mut self, is_on: bool) {
+        self.decoder.debug_mode = is_on;
     }
 }
 
