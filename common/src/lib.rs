@@ -1,6 +1,7 @@
 pub use egui;
 pub mod delta_encoding;
 mod hash_abuse;
+use anyhow::Result;
 
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
@@ -16,12 +17,15 @@ pub struct ClientToServer {
 
 #[cfg(not(feature = "json"))]
 pub fn serialize<T: Serialize>(val: &T) -> bincode::Result<Vec<u8>> {
-    bincode::serialize(val)
+    let before = bincode::serialize(val)?;
+    let after = lz4_flex::compress_prepend_size(&before);
+    //dbg!(before.len(), after.len(), std::any::type_name_of_val(val));
+    Ok(after)
 }
 
 #[cfg(not(feature = "json"))]
-pub fn deserialize<T: DeserializeOwned>(bytes: &[u8]) -> bincode::Result<T> {
-    bincode::deserialize(bytes)
+pub fn deserialize<T: DeserializeOwned>(bytes: &[u8]) -> Result<T> {
+    Ok(bincode::deserialize(&lz4_flex::decompress_size_prepended(&bytes)?)?)
 }
 
 #[cfg(feature = "json")]
