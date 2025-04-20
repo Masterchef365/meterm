@@ -99,7 +99,7 @@ async fn accept_connection(
             Some(val) = rx.recv() => {
                 let ser = meterm_common::serialize::<ServerToClient>(&val).unwrap();
                 let _ = ws_stream.send(Message::Binary(
-                        ser
+                        ser.into()
                 )).await;
             },
         }
